@@ -1,0 +1,171 @@
+.container {
+    padding: 30rpx;
+    background: #f5f5f5;
+    min-height: 100vh;
+  }
+  
+  .location-info {
+    background: #fff;
+    border-radius: 20rpx;
+    padding: 30rpx;
+    margin-bottom: 30rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+  }
+  
+  .location-title {
+    font-size: 28rpx;
+    color: #666;
+    margin-bottom: 10rpx;
+  }
+  
+  .address {
+    font-size: 30rpx;
+    color: #333;
+    display: block;
+    margin-bottom: 10rpx;
+  }
+  
+  .distance {
+    font-size: 24rpx;
+    color: #1890ff;
+  }
+  
+  .checkin-status {
+    text-align: center;
+    padding: 60rpx 0;
+  }
+  
+  .time-display {
+    margin-bottom: 50rpx;
+  }
+  
+  .current-time {
+    font-size: 72rpx;
+    font-weight: bold;
+    color: #333;
+    display: block;
+  }
+  
+  .current-date {
+    font-size: 28rpx;
+    color: #666;
+    margin-top: 10rpx;
+  }
+  
+  .status-circle {
+    width: 300rpx;
+    height: 300rpx;
+    border-radius: 50%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .status-circle.active {
+    background: linear-gradient(45deg, #1890ff, #36cfc9);
+    box-shadow: 0 10rpx 30rpx rgba(24, 144, 255, 0.3);
+  }
+  
+  .status-circle.disabled {
+    background: #d9d9d9;
+  }
+  
+  .inner-circle {
+    width: 240rpx;
+    height: 240rpx;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .status-text {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .checkin-actions {
+    padding: 40rpx 0;
+  }
+  
+  .checkin-btn {
+    width: 100%;
+    height: 90rpx;
+    border-radius: 45rpx;
+    font-size: 36rpx;
+    font-weight: bold;
+    margin-bottom: 30rpx;
+  }
+  
+  .checkin-btn.enabled {
+    background: #1890ff;
+    color: #fff;
+  }
+  
+  .checkin-btn.disabled {
+    background: #d9d9d9;
+    color: #999;
+  }
+  
+  .btn-group {
+    display: flex;
+    gap: 20rpx;
+  }
+  
+  .secondary-btn {
+    flex: 1;
+    height: 70rpx;
+    background: #fff;
+    color: #1890ff;
+    border: 1rpx solid #1890ff;
+    border-radius: 35rpx;
+    font-size: 28rpx;
+  }
+  
+  .today-summary {
+    background: #fff;
+    border-radius: 20rpx;
+    padding: 30rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+  }
+  
+  .summary-title {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20rpx;
+  }
+  
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20rpx 0;
+    border-bottom: 1rpx solid #f0f0f0;
+  }
+  
+  .summary-item:last-child {
+    border-bottom: none;
+  }
+  
+  .label {
+    font-size: 28rpx;
+    color: #666;
+  }
+  
+  .value {
+    font-size: 28rpx;
+    font-weight: bold;
+  }
+  
+  .value.success {
+    color: #52c41a;
+  }
+  
+  .value.pending {
+    color: #999;
+  }

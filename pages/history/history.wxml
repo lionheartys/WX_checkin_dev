@@ -1,0 +1,103 @@
+<view class="container">
+  <!-- 筛选器 -->
+  <view class="filter-bar">
+    <picker 
+      mode="date" 
+      value="{{startDate}}" 
+      end="{{endDate}}"
+      bindchange="onStartDateChange"
+    >
+      <view class="date-picker">
+        <text>{{startDate || '开始日期'}}</text>
+        <text class="arrow">▼</text>
+      </view>
+    </picker>
+    
+    <text class="to">至</text>
+    
+    <picker 
+      mode="date" 
+      value="{{endDate}}" 
+      start="{{startDate}}"
+      bindchange="onEndDateChange"
+    >
+      <view class="date-picker">
+        <text>{{endDate || '结束日期'}}</text>
+        <text class="arrow">▼</text>
+      </view>
+    </picker>
+    
+    <button class="filter-btn" bindtap="loadHistory">查询</button>
+  </view>
+
+  <!-- 统计信息 -->
+  <view class="statistics">
+    <view class="stat-item">
+      <text class="stat-number">{{statistics.totalDays}}</text>
+      <text class="stat-label">总天数</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-number">{{statistics.normalDays}}</text>
+      <text class="stat-label">正常</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-number">{{statistics.lateDays}}</text>
+      <text class="stat-label">迟到</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-number">{{statistics.absentDays}}</text>
+      <text class="stat-label">缺勤</text>
+    </view>
+  </view>
+
+  <!-- 记录列表 -->
+  <view class="records-section">
+    <view class="section-title">
+      打卡记录 ({{records.length}}条)
+    </view>
+    
+    <view class="records-list">
+      <view 
+        class="record-item" 
+        wx:for="{{groupedRecords}}" 
+        wx:key="date"
+      >
+        <view class="date-header">{{item.date}}</view>
+        <view class="day-records">
+          <view 
+            class="record-detail" 
+            wx:for="{{item.records}}" 
+            wx:key="id"
+            wx:for-item="record"
+          >
+            <view class="record-left">
+              <view class="record-type {{record.checkin_type}}">
+                {{record.checkin_type === 'in' ? '上班' : '下班'}}
+              </view>
+              <view class="record-time">{{record.time}}</view>
+            </view>
+            <view class="record-right">
+              <view class="record-status {{record.checkin_status}}">
+                {{record.statusText}}
+              </view>
+              <view class="record-location" wx:if="{{record.location_name}}">
+                {{record.location_name}}
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 加载状态 -->
+    <view class="loading-state" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+    
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{!loading && records.length === 0}}">
+      <image class="empty-icon" src="../../images/empty.jpg"></image>
+      <text class="empty-text">暂无打卡记录</text>
+    </view>
+  </view>
+</view>

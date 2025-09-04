@@ -1,0 +1,65 @@
+<view class="container">
+  <!-- 位置信息 -->
+  <view class="location-info">
+    <view class="location-title">当前位置</view>
+    <view class="location-detail">
+      <text class="address">{{currentAddress}}</text>
+      <text class="distance" wx:if="{{distance >= 0}}">
+        距离打卡点：{{distance}}米
+      </text>
+    </view>
+  </view>
+
+  <!-- 打卡状态 -->
+  <view class="checkin-status">
+    <view class="time-display">
+      <text class="current-time">{{currentTime}}</text>
+      <text class="current-date">{{currentDate}}</text>
+    </view>
+    
+    <view class="status-circle {{canCheckin ? 'active' : 'disabled'}}">
+      <view class="inner-circle">
+        <text class="status-text">{{statusText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 打卡按钮 -->
+  <view class="checkin-actions">
+    <button 
+      class="checkin-btn {{canCheckin ? 'enabled' : 'disabled'}}" 
+      bindtap="doCheckin"
+      disabled="{{!canCheckin || loading}}"
+    >
+      {{loading ? '打卡中...' : '立即打卡'}}
+    </button>
+    
+    <view class="btn-group">
+      <button class="secondary-btn" bindtap="refreshLocation">
+        刷新位置
+      </button>
+      <button class="secondary-btn" bindtap="viewHistory">
+        查看记录
+      </button>
+    </view>
+  </view>
+
+  <!-- 今日记录 -->
+  <view class="today-summary">
+    <view class="summary-title">今日打卡</view>
+    <view class="summary-content">
+      <view class="summary-item">
+        <text class="label">上班：</text>
+        <text class="value {{todaySummary.checkedIn ? 'success' : 'pending'}}">
+          {{todaySummary.checkedIn ? todaySummary.checkinTime : '未打卡'}}
+        </text>
+      </view>
+      <view class="summary-item">
+        <text class="label">下班：</text>
+        <text class="value {{todaySummary.checkedOut ? 'success' : 'pending'}}">
+          {{todaySummary.checkedOut ? todaySummary.checkoutTime : '未打卡'}}
+        </text>
+      </view>
+    </view>
+  </view>
+</view>

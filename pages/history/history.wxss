@@ -1,0 +1,188 @@
+.container {
+    background: #f5f5f5;
+    min-height: 100vh;
+  }
+  
+  .filter-bar {
+    background: #fff;
+    padding: 20rpx 30rpx;
+    display: flex;
+    align-items: center;
+    gap: 20rpx;
+    box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.06);
+  }
+  
+  .date-picker {
+    flex: 1;
+    height: 60rpx;
+    border: 1rpx solid #d9d9d9;
+    border-radius: 8rpx;
+    padding: 0 20rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 26rpx;
+  }
+  
+  .to {
+    font-size: 26rpx;
+    color: #666;
+  }
+  
+  .filter-btn {
+    height: 60rpx;
+    padding: 0 30rpx;
+    background: #1890ff;
+    color: #fff;
+    border-radius: 8rpx;
+    font-size: 26rpx;
+  }
+  
+  .statistics {
+    background: #fff;
+    margin: 20rpx 30rpx;
+    border-radius: 16rpx;
+    padding: 30rpx;
+    display: flex;
+    justify-content: space-around;
+    box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.08);
+  }
+  
+  .stat-item {
+    text-align: center;
+  }
+  
+  .stat-number {
+    display: block;
+    font-size: 48rpx;
+    font-weight: bold;
+    color: #1890ff;
+    margin-bottom: 10rpx;
+  }
+  
+  .stat-label {
+    font-size: 24rpx;
+    color: #666;
+  }
+  
+  .records-section {
+    margin: 20rpx 30rpx;
+  }
+  
+  .section-title {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20rpx;
+  }
+  
+  .record-item {
+    background: #fff;
+    border-radius: 16rpx;
+    margin-bottom: 20rpx;
+    overflow: hidden;
+    box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.08);
+  }
+  
+  .date-header {
+    background: #f8f9fa;
+    padding: 20rpx 30rpx;
+    font-size: 28rpx;
+    font-weight: bold;
+    color: #333;
+    border-bottom: 1rpx solid #f0f0f0;
+  }
+  
+  .record-detail {
+    padding: 25rpx 30rpx;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1rpx solid #f0f0f0;
+  }
+  
+  .record-detail:last-child {
+    border-bottom: none;
+  }
+  
+  .record-left {
+    display: flex;
+    align-items: center;
+    gap: 20rpx;
+  }
+  
+  .record-type {
+    padding: 8rpx 16rpx;
+    border-radius: 20rpx;
+    font-size: 24rpx;
+    font-weight: bold;
+    color: #fff;
+    min-width: 80rpx;
+    text-align: center;
+  }
+  
+  .record-type.in {
+    background: #52c41a;
+  }
+  
+  .record-type.out {
+    background: #1890ff;
+  }
+  
+  .record-time {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .record-right {
+    text-align: right;
+  }
+  
+  .record-status {
+    font-size: 26rpx;
+    font-weight: bold;
+    margin-bottom: 5rpx;
+  }
+  
+  .record-status.normal {
+    color: #52c41a;
+  }
+  
+  .record-status.late {
+    color: #faad14;
+  }
+  
+  .record-status.early {
+    color: #fa8c16;
+  }
+  
+  .record-status.absent {
+    color: #f5222d;
+  }
+  
+  .record-status.abnormal {
+    color: #722ed1;
+  }
+  
+  .record-location {
+    font-size: 24rpx;
+    color: #999;
+  }
+  
+  .loading-state, .empty-state {
+    text-align: center;
+    padding: 80rpx 0;
+    color: #999;
+  }
+  
+  .empty-icon {
+    width: 120rpx;
+    height: 120rpx;
+    margin-bottom: 20rpx;
+  }
+  
+  .empty-text {
+    display: block;
+    font-size: 28rpx;
+  }

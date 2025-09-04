@@ -1,0 +1,56 @@
+{
+    "pages": [
+      "pages/index/index",
+      "pages/login/login",
+      "pages/checkin/checkin",
+      "pages/history/history",
+      "pages/profile/profile",
+      "pages/logs/logs"
+    ],
+    "window": {
+      "backgroundTextStyle": "light",
+      "navigationBarBackgroundColor": "#1890ff",
+      "navigationBarTitleText": "企业打卡",
+      "navigationBarTextStyle": "white",
+      "backgroundColor": "#f5f5f5"
+    },
+    "tabBar": {
+      "color": "#999999",
+      "selectedColor": "#1890ff",
+      "backgroundColor": "#ffffff",
+      "list": [
+        {
+          "pagePath": "pages/index/index",
+          "text": "首页",
+          "iconPath": "images/home.jpg",
+          "selectedIconPath": "images/home-active.jpg"
+        },
+        {
+          "pagePath": "pages/checkin/checkin", 
+          "text": "打卡",
+          "iconPath": "images/checkin.jpg",
+          "selectedIconPath": "images/checkin-active.jpg"
+        },
+        {
+          "pagePath": "pages/history/history",
+          "text": "记录", 
+          "iconPath": "images/history.jpg",
+          "selectedIconPath": "images/history-active.jpg"
+        },
+        {
+          "pagePath": "pages/profile/profile",
+          "text": "我的",
+          "iconPath": "images/profile.jpg", 
+          "selectedIconPath": "images/profile-active.jpg"
+        }
+      ]
+    },
+    "permission": {
+      "scope.userLocation": {
+        "desc": "需要获取您的位置信息进行打卡定位"
+      }
+    },
+    "requiredPrivateInfos": [
+        "getLocation"
+      ]
+  }
