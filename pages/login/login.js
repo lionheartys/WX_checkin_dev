@@ -4,7 +4,10 @@ Page({
   data: {
     username: '',
     phone: '',
-    loading: false
+    password: '',
+    confirmPassword: '',
+    loading: false,
+    isRegister: false  // false=登录模式, true=注册模式
   },
 
   onLoad() {
@@ -31,9 +34,34 @@ Page({
     })
   },
 
+  // 输入密码
+  onPasswordInput(e) {
+    this.setData({
+      password: e.detail.value
+    })
+  },
+
+  // 输入确认密码
+  onConfirmPasswordInput(e) {
+    this.setData({
+      confirmPassword: e.detail.value
+    })
+  },
+
+  // 切换登录/注册模式
+  toggleMode() {
+    this.setData({
+      isRegister: !this.data.isRegister,
+      username: '',
+      phone: '',
+      password: '',
+      confirmPassword: ''
+    })
+  },
+
   // 登录
   async login() {
-    const { username, phone } = this.data
+    const { username, password } = this.data
     
     if (!username.trim()) {
       wx.showToast({
@@ -43,10 +71,21 @@ Page({
       return
     }
 
+    if (!password) {
+      wx.showToast({
+        title: '请输入密码',
+        icon: 'none'
+      })
+      return
+    }
+
     this.setData({ loading: true })
 
     try {
-      const res = await api.login({ username })
+      const res = await api.login({ 
+        username,
+        password 
+      })
       
       if (res.code === 200) {
         // 保存用户信息
@@ -69,9 +108,18 @@ Page({
             url: '/pages/index/index'
           })
         }, 1000)
+      } else {
+        wx.showToast({
+          title: res.message || '登录失败',
+          icon: 'none'
+        })
       }
     } catch (error) {
       console.error('登录失败:', error)
+      wx.showToast({
+        title: '登录失败',
+        icon: 'none'
+      })
     } finally {
       this.setData({ loading: false })
     }
@@ -79,17 +127,25 @@ Page({
 
   // 注册
   async register() {
-    const { username, phone } = this.data
+    const { username, phone, password, confirmPassword } = this.data
     
-    if (!username.trim() || !phone.trim()) {
+    if (!username.trim()) {
       wx.showToast({
-        title: '请输入用户名和手机号',
+        title: '请输入用户名',
         icon: 'none'
       })
       return
     }
 
-    // 手机号简单验证
+    if (!phone.trim()) {
+      wx.showToast({
+        title: '请输入手机号',
+        icon: 'none'
+      })
+      return
+    }
+
+    // 手机号验证
     if (!/^1[3-9]\d{9}$/.test(phone)) {
       wx.showToast({
         title: '手机号格式不正确',
@@ -98,10 +154,30 @@ Page({
       return
     }
 
+    if (!password || password.length < 6) {
+      wx.showToast({
+        title: '密码至少6位',
+        icon: 'none'
+      })
+      return
+    }
+
+    if (password !== confirmPassword) {
+      wx.showToast({
+        title: '两次密码不一致',
+        icon: 'none'
+      })
+      return
+    }
+
+    this.setData({ loading: true })
+
     try {
       const res = await api.register({
         username,
         phone,
+        password,
+        confirmPassword,
         company_id: 1,
         openid: `test_${Date.now()}`
       })
@@ -112,13 +188,28 @@ Page({
           icon: 'success'
         })
         
-        // 注册成功后自动登录
+        // 注册成功后切换到登录模式
         setTimeout(() => {
-          this.login()
+          this.setData({
+            isRegister: false,
+            password: '',
+            confirmPassword: ''
+          })
         }, 1000)
+      } else {
+        wx.showToast({
+          title: res.message || '注册失败',
+          icon: 'none'
+        })
       }
     } catch (error) {
       console.error('注册失败:', error)
+      wx.showToast({
+        title: '注册失败',
+        icon: 'none'
+      })
+    } finally {
+      this.setData({ loading: false })
     }
   }
 })

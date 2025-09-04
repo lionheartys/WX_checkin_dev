@@ -59,6 +59,15 @@ function request(options) {
       })
     },
   
+    // 获取打卡配置
+    getCheckinConfig(projectId = 1) {
+      return request({
+        url: '/checkin/config',
+        method: 'GET',
+        data: { projectId }
+      })
+    },
+  
     // 打卡
     checkin(data) {
       return request({

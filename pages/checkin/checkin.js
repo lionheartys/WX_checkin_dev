@@ -1,21 +1,21 @@
+// 引入模块
 const api = require('../../utils/request.js')
 const util = require('../../utils/util.js')
 
 Page({
   data: {
+    userInfo: null,
+    userLocation: null,
+    checkinLocation: null, // 从后端动态获取
+    maxDistance: 100,
+    distance: 0,
+    canCheckin: false,
+    loading: false,
+    statusText: '加载中...',
     currentTime: '',
     currentDate: '',
     currentAddress: '获取位置中...',
-    distance: -1,
-    canCheckin: false,
-    loading: false,
-    statusText: '准备打卡',
-    userLocation: null,
-    checkinLocation: {
-      longitude: 121.4737,
-      latitude: 31.2304
-    },
-    maxDistance: 200, // 最大打卡距离（米）
+    todayRecords: [],
     todaySummary: {
       checkedIn: false,
       checkedOut: false,
@@ -24,19 +24,29 @@ Page({
     }
   },
 
-  onLoad() {
+  async onLoad() {
     this.initPage()
-    this.startTimeUpdate()
+    // 先获取打卡配置，再获取位置
+    await this.loadCheckinConfig()
     this.getLocation()
+    this.getUserInfo()
+    this.loadTodayRecords()
     this.loadTodaySummary()
+    
+    // 开始定时更新时间
+    this.startTimeUpdate()
   },
 
   onShow() {
     this.loadTodaySummary()
+    this.loadTodayRecords()
   },
 
   onUnload() {
     // 清理定时器
+    if (this.timer) {
+      clearInterval(this.timer)
+    }
     if (this.timeInterval) {
       clearInterval(this.timeInterval)
     }
@@ -49,7 +59,7 @@ Page({
 
   // 开始时间更新
   startTimeUpdate() {
-    this.timeInterval = setInterval(() => {
+    this.timer = setInterval(() => {
       this.updateTime()
     }, 1000)
   },
@@ -71,8 +81,80 @@ Page({
     })
   },
 
+  // 获取用户信息
+  getUserInfo() {
+    const userInfo = wx.getStorageSync('userInfo')
+    if (userInfo) {
+      this.setData({ userInfo })
+    }
+  },
+
+  // 从后端获取打卡配置
+  async loadCheckinConfig() {
+    wx.showLoading({
+      title: '加载配置...'
+    })
+    
+    try {
+      // [修复] 使用 request.js 中定义的 getCheckinConfig 方法
+      const res = await api.getCheckinConfig(1)
+      
+      wx.hideLoading()
+      
+      if (res.code === 200 && res.data) {
+        this.setData({
+          checkinLocation: {
+            latitude: res.data.latitude,
+            longitude: res.data.longitude,
+            address: res.data.location_name || '公司',
+          },
+          maxDistance: res.data.checkin_range || 100
+        })
+        console.log('打卡配置加载成功:', this.data.checkinLocation)
+      } else {
+        wx.showToast({
+          title: res.message || '获取打卡配置失败',
+          icon: 'none'
+        })
+        // 使用默认配置（成都）
+        this.setDefaultConfig()
+      }
+    } catch (error) {
+      wx.hideLoading()
+      console.error('加载打卡配置失败:', error)
+      wx.showToast({
+        title: '网络错误',
+        icon: 'none'
+      })
+      // 使用默认配置
+      this.setDefaultConfig()
+    }
+  },
+
+  // 设置默认配置
+  setDefaultConfig() {
+    this.setData({
+      checkinLocation: {
+        latitude: 30.6424200,
+        longitude: 104.0431100,
+        address: '默认办公点'
+      },
+      maxDistance: 100
+    })
+  },
+
   // 获取位置信息
   getLocation() {
+    // 确保有打卡配置才继续
+    if (!this.data.checkinLocation) {
+      console.log('打卡配置未加载，等待配置...')
+      // 延迟重试
+      setTimeout(() => {
+        this.getLocation()
+      }, 1000)
+      return
+    }
+    
     wx.showLoading({
       title: '获取位置中...'
     })
@@ -83,8 +165,8 @@ Page({
         console.log('获取位置成功:', res)
         this.setData({
           userLocation: {
-            longitude: res.longitude,
-            latitude: res.latitude
+            latitude: res.latitude,
+            longitude: res.longitude
           }
         })
         
@@ -115,6 +197,10 @@ Page({
             icon: 'none'
           })
         }
+        
+        this.setData({
+          statusText: '位置获取失败'
+        })
       },
       complete: () => {
         wx.hideLoading()
@@ -126,7 +212,11 @@ Page({
   calculateDistance() {
     const { userLocation, checkinLocation } = this.data
     
-    if (!userLocation) return
+    console.log('用户位置:', userLocation)
+    console.log('打卡位置:', checkinLocation)
+    console.log('最大允许距离:', this.data.maxDistance)
+    
+    if (!userLocation || !checkinLocation) return
     
     const distance = util.calculateDistance(
       userLocation.latitude,
@@ -135,11 +225,13 @@ Page({
       checkinLocation.longitude
     )
     
+    console.log('计算出的距离:', distance, '米')
+    
     const canCheckin = distance <= this.data.maxDistance
     let statusText = '准备打卡'
     
     if (!canCheckin) {
-      statusText = '距离过远'
+      statusText = `距离过远 (${Math.round(distance)}米)`
     }
     
     this.setData({
@@ -151,29 +243,26 @@ Page({
 
   // 获取地址信息
   getAddressInfo(latitude, longitude) {
-    // 使用微信自带的地址解析
-    wx.request({
-      url: `https://apis.map.qq.com/ws/geocoder/v1/?location=${latitude},${longitude}&key=YOUR_TENCENT_MAP_KEY&get_poi=1`,
-      success: (res) => {
-        if (res.data.status === 0) {
-          this.setData({
-            currentAddress: res.data.result.address
-          })
-        }
-      },
-      fail: () => {
-        this.setData({
-          currentAddress: '位置解析失败'
-        })
-      }
+    // 这里可以使用腾讯地图API，需要申请key
+    // 暂时使用简单的显示
+    this.setData({
+      currentAddress: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
     })
   },
 
   // 执行打卡
   async doCheckin() {
-    if (!this.data.canCheckin || this.data.loading) return
+    if (!this.data.canCheckin || this.data.loading) {
+      if (!this.data.canCheckin) {
+        wx.showToast({
+          title: `距离过远，无法打卡 (${this.data.distance}米)`,
+          icon: 'none'
+        })
+      }
+      return
+    }
     
-    const userInfo = wx.getStorageSync('userInfo')
+    const userInfo = this.data.userInfo || wx.getStorageSync('userInfo')
     if (!userInfo) {
       wx.showToast({
         title: '请先登录',
@@ -187,6 +276,10 @@ Page({
     
     this.setData({ loading: true })
     
+    wx.showLoading({
+      title: '打卡中...'
+    })
+    
     try {
       const checkinData = {
         user_id: userInfo.id,
@@ -195,7 +288,10 @@ Page({
         latitude: this.data.userLocation.latitude
       }
       
+      // 使用现有的打卡API
       const res = await api.checkin(checkinData)
+      
+      wx.hideLoading()
       
       if (res.code === 200) {
         wx.showToast({
@@ -203,13 +299,24 @@ Page({
           icon: 'success'
         })
         
-        // 刷新今日汇总
+        // 刷新今日汇总和记录
         setTimeout(() => {
           this.loadTodaySummary()
+          this.loadTodayRecords()
         }, 1000)
+      } else {
+        wx.showToast({
+          title: res.message || '打卡失败',
+          icon: 'none'
+        })
       }
     } catch (error) {
+      wx.hideLoading()
       console.error('打卡失败:', error)
+      wx.showToast({
+        title: '打卡失败，请重试',
+        icon: 'none'
+      })
     } finally {
       this.setData({ loading: false })
     }
@@ -233,34 +340,54 @@ Page({
     return 'out'
   },
 
-  // 加载今日汇总
-  async loadTodaySummary() {
-    const userInfo = wx.getStorageSync('userInfo')
+  // 加载今日记录
+  async loadTodayRecords() {
+    const userInfo = this.data.userInfo || wx.getStorageSync('userInfo')
     if (!userInfo) return
     
     try {
+      // [修复] 使用 request.js 中定义的 getCheckinHistory 方法
       const res = await api.getCheckinHistory(userInfo.id)
+      
       if (res.code === 200) {
-        const today = new Date().toDateString()
-        const todayRecords = res.data.filter(record => {
-          return new Date(record.checkin_time).toDateString() === today
-        })
-        
-        const checkedIn = todayRecords.some(r => r.checkin_type === 'in')
-        const checkedOut = todayRecords.some(r => r.checkin_type === 'out')
-        
-        const checkinRecord = todayRecords.find(r => r.checkin_type === 'in')
-        const checkoutRecord = todayRecords.find(r => r.checkin_type === 'out')
-        
         this.setData({
-          todaySummary: {
-            checkedIn,
-            checkedOut,
-            checkinTime: checkinRecord ? new Date(checkinRecord.checkin_time).toTimeString().split(' ')[0] : '',
-            checkoutTime: checkoutRecord ? new Date(checkoutRecord.checkin_time).toTimeString().split(' ')[0] : ''
-          }
+          todayRecords: res.data || []
         })
       }
+    } catch (error) {
+      console.error('加载记录失败:', error)
+    }
+  },
+
+  // 加载今日汇总
+  async loadTodaySummary() {
+    const userInfo = this.data.userInfo || wx.getStorageSync('userInfo')
+    if (!userInfo) return
+    
+    try {
+      // 使用今日记录来计算汇总
+      const todayRecords = this.data.todayRecords
+      const today = new Date().toDateString()
+      
+      // 过滤今天的记录
+      const todayCheckins = todayRecords.filter(record => {
+        return new Date(record.checkin_time).toDateString() === today
+      })
+      
+      const checkedIn = todayCheckins.some(r => r.checkin_type === 'in')
+      const checkedOut = todayCheckins.some(r => r.checkin_type === 'out')
+      
+      const checkinRecord = todayCheckins.find(r => r.checkin_type === 'in')
+      const checkoutRecord = todayCheckins.find(r => r.checkin_type === 'out')
+      
+      this.setData({
+        todaySummary: {
+          checkedIn,
+          checkedOut,
+          checkinTime: checkinRecord ? new Date(checkinRecord.checkin_time).toTimeString().split(' ')[0] : '',
+          checkoutTime: checkoutRecord ? new Date(checkoutRecord.checkin_time).toTimeString().split(' ')[0] : ''
+        }
+      })
     } catch (error) {
       console.error('加载今日汇总失败:', error)
     }
@@ -271,9 +398,15 @@ Page({
     this.getLocation()
   },
 
+  // 刷新配置
+  async refreshConfig() {
+    await this.loadCheckinConfig()
+    this.getLocation()
+  },
+
   // 查看历史记录
   viewHistory() {
-    wx.switchTab({
+    wx.navigateTo({
       url: '/pages/history/history'
     })
   }
