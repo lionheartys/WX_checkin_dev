@@ -26,6 +26,43 @@ router.post('/makeup', authMiddleware, [
   body('reason').notEmpty().withMessage('补卡原因不能为空')
 ], checkinController.applyMakeup);
 
+
+
+// 新增：获取打卡配置接口
+router.get('/config', async (req, res) => {
+  const pool = require('../config/database');
+  try {
+    const { projectId } = req.query;
+    
+    // 根据项目ID获取最新的打卡配置
+    const [rows] = await pool.query(
+      `SELECT * FROM checkin_locations 
+       WHERE project_id = ? AND status = 1 
+       ORDER BY id DESC 
+       LIMIT 1`,
+      [projectId || 1]
+    );
+    
+    if (rows.length > 0) {
+      res.json({
+        code: 200,
+        data: rows[0]
+      });
+    } else {
+      res.json({
+        code: 404,
+        message: '未找到打卡配置'
+      });
+    }
+  } catch (error) {
+    console.error('获取打卡配置失败:', error);
+    res.status(500).json({ 
+      code: 500, 
+      message: '获取打卡配置失败'
+    });
+  }
+});
+
 // 测试用简单打卡（不需要认证和入场验证）
 router.post('/simple-clock', async (req, res) => {
   const pool = require('../config/database');

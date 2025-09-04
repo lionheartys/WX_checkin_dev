@@ -19,6 +19,7 @@ CREATE TABLE users (
     openid VARCHAR(100) UNIQUE NOT NULL COMMENT '微信openid',
     username VARCHAR(50) NOT NULL COMMENT '用户名',
     phone VARCHAR(20) NOT NULL COMMENT '手机号',
+    password VARCHAR(255) COMMENT '加密后的密码',
     company_id INT COMMENT '所属公司ID',
     role ENUM('admin', 'project_manager', 'staff') DEFAULT 'staff' COMMENT '用户角色',
     device_id VARCHAR(100) COMMENT '常用设备ID',
