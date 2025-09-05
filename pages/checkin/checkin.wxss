@@ -1,171 +1,359 @@
 .container {
-    padding: 30rpx;
-    background: #f5f5f5;
+    padding: 20rpx;
+    background-color: #f5f5f5;
     min-height: 100vh;
   }
   
-  .location-info {
-    background: #fff;
-    border-radius: 20rpx;
+  /* 头部样式 */
+  .header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
     padding: 30rpx;
-    margin-bottom: 30rpx;
-    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
-  }
-  
-  .location-title {
-    font-size: 28rpx;
-    color: #666;
-    margin-bottom: 10rpx;
-  }
-  
-  .address {
-    font-size: 30rpx;
-    color: #333;
-    display: block;
-    margin-bottom: 10rpx;
-  }
-  
-  .distance {
-    font-size: 24rpx;
-    color: #1890ff;
-  }
-  
-  .checkin-status {
-    text-align: center;
-    padding: 60rpx 0;
+    border-radius: 20rpx;
+    margin-bottom: 20rpx;
   }
   
   .time-display {
-    margin-bottom: 50rpx;
+    text-align: center;
+    margin-bottom: 20rpx;
   }
   
   .current-time {
-    font-size: 72rpx;
+    font-size: 60rpx;
     font-weight: bold;
-    color: #333;
     display: block;
   }
   
   .current-date {
     font-size: 28rpx;
-    color: #666;
+    opacity: 0.9;
+    display: block;
     margin-top: 10rpx;
   }
   
-  .status-circle {
-    width: 300rpx;
-    height: 300rpx;
-    border-radius: 50%;
-    margin: 0 auto;
+  .location-info {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    position: relative;
+    font-size: 24rpx;
   }
   
-  .status-circle.active {
-    background: linear-gradient(45deg, #1890ff, #36cfc9);
-    box-shadow: 0 10rpx 30rpx rgba(24, 144, 255, 0.3);
-  }
-  
-  .status-circle.disabled {
-    background: #d9d9d9;
-  }
-  
-  .inner-circle {
-    width: 240rpx;
-    height: 240rpx;
-    background: #fff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .status-text {
-    font-size: 32rpx;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .checkin-actions {
-    padding: 40rpx 0;
-  }
-  
-  .checkin-btn {
-    width: 100%;
-    height: 90rpx;
-    border-radius: 45rpx;
-    font-size: 36rpx;
-    font-weight: bold;
-    margin-bottom: 30rpx;
-  }
-  
-  .checkin-btn.enabled {
-    background: #1890ff;
-    color: #fff;
-  }
-  
-  .checkin-btn.disabled {
-    background: #d9d9d9;
-    color: #999;
-  }
-  
-  .btn-group {
-    display: flex;
-    gap: 20rpx;
-  }
-  
-  .secondary-btn {
-    flex: 1;
-    height: 70rpx;
-    background: #fff;
-    color: #1890ff;
-    border: 1rpx solid #1890ff;
-    border-radius: 35rpx;
-    font-size: 28rpx;
-  }
-  
-  .today-summary {
-    background: #fff;
+  .location-refresh {
+    padding: 5rpx 15rpx;
+    border: 1px solid white;
     border-radius: 20rpx;
-    padding: 30rpx;
-    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+    font-size: 22rpx;
+  }
+  
+  /* 今日汇总 */
+  .today-summary {
+    background: white;
+    padding: 25rpx;
+    border-radius: 15rpx;
+    margin-bottom: 20rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
   }
   
   .summary-title {
     font-size: 32rpx;
     font-weight: bold;
-    color: #333;
     margin-bottom: 20rpx;
+    color: #333;
   }
   
   .summary-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 20rpx 0;
-    border-bottom: 1rpx solid #f0f0f0;
+    padding: 10rpx 0;
   }
   
-  .summary-item:last-child {
-    border-bottom: none;
-  }
-  
-  .label {
-    font-size: 28rpx;
+  .summary-label {
     color: #666;
-  }
-  
-  .value {
     font-size: 28rpx;
-    font-weight: bold;
   }
   
-  .value.success {
+  .summary-value {
+    font-size: 28rpx;
+    font-weight: 500;
+  }
+  
+  .summary-value.checked {
     color: #52c41a;
   }
   
-  .value.pending {
+  .summary-value.unchecked {
     color: #999;
+  }
+  
+  /* 状态卡片 */
+  .status-card {
+    background: white;
+    padding: 25rpx;
+    border-radius: 15rpx;
+    margin-bottom: 20rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+  }
+  
+  .status-info {
+    display: flex;
+    justify-content: space-between;
+    padding: 10rpx 0;
+  }
+  
+  .status-label {
+    color: #666;
+    font-size: 28rpx;
+  }
+  
+  .status-value {
+    font-size: 28rpx;
+    font-weight: 500;
+  }
+  
+  .in-range {
+    color: #52c41a;
+  }
+  
+  .out-range {
+    color: #ff4d4f;
+  }
+  
+  .can-check {
+    color: #52c41a;
+  }
+  
+  .cannot-check {
+    color: #ff4d4f;
+  }
+  
+  /* 打卡按钮 */
+  .checkin-buttons {
+    display: flex;
+    gap: 20rpx;
+    margin-bottom: 20rpx;
+  }
+  
+  .checkin-btn {
+    flex: 1;
+    height: 200rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20rpx;
+    border: none;
+    color: white;
+    font-size: 32rpx;
+    font-weight: bold;
+    transition: all 0.3s;
+  }
+  
+  .checkin-in {
+    background: linear-gradient(135deg, #FFA500 0%, #FF6347 100%);
+  }
+  
+  .checkin-out {
+    background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);
+  }
+  
+  .checkin-btn.disabled {
+    opacity: 0.5;
+    background: #ccc !important;
+  }
+  
+  .btn-icon {
+    font-size: 50rpx;
+    margin-bottom: 10rpx;
+  }
+  
+  .btn-text {
+    font-size: 30rpx;
+  }
+  
+  /* 功能按钮 */
+  .function-buttons {
+    display: flex;
+    gap: 20rpx;
+    margin-bottom: 20rpx;
+  }
+  
+  .function-btn {
+    flex: 1;
+    height: 80rpx;
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 15rpx;
+    font-size: 28rpx;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* 记录列表 */
+  .records-section {
+    background: white;
+    padding: 25rpx;
+    border-radius: 15rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+  }
+  
+  .section-title {
+    font-size: 32rpx;
+    font-weight: bold;
+    margin-bottom: 20rpx;
+    color: #333;
+  }
+  
+  .record-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 15rpx 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .record-type {
+    font-size: 28rpx;
+    padding: 5rpx 15rpx;
+    border-radius: 10rpx;
+  }
+  
+  .type-in {
+    background: #fff7e6;
+    color: #fa8c16;
+  }
+  
+  .type-out {
+    background: #e6f7ff;
+    color: #1890ff;
+  }
+  
+  .record-time {
+    font-size: 26rpx;
+    color: #666;
+  }
+  
+  .record-status {
+    font-size: 24rpx;
+  }
+  
+  .record-status.normal {
+    color: #52c41a;
+  }
+  
+  .record-status.late,
+  .record-status.early,
+  .record-status.abnormal {
+    color: #ff4d4f;
+  }
+  
+  /* 补卡对话框 */
+  .makeup-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+  }
+  
+  .dialog-mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+  }
+  
+  .dialog-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    background: white;
+    border-radius: 20rpx;
+    overflow: hidden;
+  }
+  
+  .dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25rpx;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .dialog-title {
+    font-size: 34rpx;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .dialog-close {
+    font-size: 50rpx;
+    color: #999;
+    padding: 0 10rpx;
+  }
+  
+  .dialog-body {
+    padding: 25rpx;
+  }
+  
+  .form-item {
+    margin-bottom: 25rpx;
+  }
+  
+  .form-label {
+    display: block;
+    font-size: 28rpx;
+    color: #666;
+    margin-bottom: 10rpx;
+  }
+  
+  .picker {
+    padding: 15rpx;
+    border: 1px solid #e8e8e8;
+    border-radius: 10rpx;
+    font-size: 28rpx;
+  }
+  
+  .radio-label {
+    margin-right: 30rpx;
+    font-size: 28rpx;
+  }
+  
+  .form-textarea {
+    width: 100%;
+    height: 150rpx;
+    padding: 15rpx;
+    border: 1px solid #e8e8e8;
+    border-radius: 10rpx;
+    font-size: 28rpx;
+    box-sizing: border-box;
+  }
+  
+  .dialog-footer {
+    display: flex;
+    border-top: 1px solid #f0f0f0;
+  }
+  
+  .dialog-btn {
+    flex: 1;
+    height: 90rpx;
+    border: none;
+    font-size: 32rpx;
+    line-height: 90rpx;
+    text-align: center;
+  }
+  
+  .dialog-btn.cancel {
+    background: #f5f5f5;
+    color: #666;
+  }
+  
+  .dialog-btn.confirm {
+    background: #667eea;
+    color: white;
   }

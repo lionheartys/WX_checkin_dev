@@ -91,6 +91,22 @@ function request(options) {
         url: '/checkin/users',
         method: 'GET'
       })
+    },
+     // 补卡申请
+    applyMakeup(data) {
+        return request({
+        url: '/checkin/makeup',
+        method: 'POST',
+        data
+        })
+    },
+    
+    // 获取今日打卡记录
+    getTodayRecords(userId) {
+        return request({
+        url: '/checkin/today',
+        method: 'GET'
+        })
     }
   }
   

@@ -1,64 +1,146 @@
 <view class="container">
-  <!-- 位置信息 -->
-  <view class="location-info">
-    <view class="location-title">当前位置</view>
-    <view class="location-detail">
-      <text class="address">{{currentAddress}}</text>
-      <text class="distance" wx:if="{{distance >= 0}}">
-        距离打卡点：{{distance}}米
-      </text>
-    </view>
-  </view>
-
-  <!-- 打卡状态 -->
-  <view class="checkin-status">
+  <!-- 头部时间显示 -->
+  <view class="header">
     <view class="time-display">
       <text class="current-time">{{currentTime}}</text>
       <text class="current-date">{{currentDate}}</text>
     </view>
-    
-    <view class="status-circle {{canCheckin ? 'active' : 'disabled'}}">
-      <view class="inner-circle">
-        <text class="status-text">{{statusText}}</text>
-      </view>
+    <view class="location-info">
+      <text class="location-text">{{currentAddress}}</text>
+      <text class="location-refresh" bindtap="refreshLocation">刷新位置</text>
     </view>
   </view>
 
-  <!-- 打卡按钮 -->
-  <view class="checkin-actions">
-    <button 
-      class="checkin-btn {{canCheckin ? 'enabled' : 'disabled'}}" 
-      bindtap="doCheckin"
-      disabled="{{!canCheckin || loading}}"
-    >
-      {{loading ? '打卡中...' : '立即打卡'}}
-    </button>
-    
-    <view class="btn-group">
-      <button class="secondary-btn" bindtap="refreshLocation">
-        刷新位置
-      </button>
-      <button class="secondary-btn" bindtap="viewHistory">
-        查看记录
-      </button>
-    </view>
-  </view>
-
-  <!-- 今日记录 -->
+  <!-- 今日打卡状态 -->
   <view class="today-summary">
-    <view class="summary-title">今日打卡</view>
+    <view class="summary-title">今日打卡状态</view>
     <view class="summary-content">
       <view class="summary-item">
-        <text class="label">上班：</text>
-        <text class="value {{todaySummary.checkedIn ? 'success' : 'pending'}}">
+        <text class="summary-label">上班打卡：</text>
+        <text class="summary-value {{todaySummary.checkedIn ? 'checked' : 'unchecked'}}">
           {{todaySummary.checkedIn ? todaySummary.checkinTime : '未打卡'}}
         </text>
       </view>
       <view class="summary-item">
-        <text class="label">下班：</text>
-        <text class="value {{todaySummary.checkedOut ? 'success' : 'pending'}}">
+        <text class="summary-label">下班打卡：</text>
+        <text class="summary-value {{todaySummary.checkedOut ? 'checked' : 'unchecked'}}">
           {{todaySummary.checkedOut ? todaySummary.checkoutTime : '未打卡'}}
         </text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 打卡状态 -->
+  <view class="status-card">
+    <view class="status-info">
+      <text class="status-label">打卡地点：</text>
+      <text class="status-value">{{checkinLocation.address}}</text>
+    </view>
+    <view class="status-info">
+      <text class="status-label">距离：</text>
+      <text class="status-value {{canCheckin ? 'in-range' : 'out-range'}}">
+        {{distance}}米
+      </text>
+    </view>
+    <view class="status-info">
+      <text class="status-label">状态：</text>
+      <text class="status-value {{canCheckin ? 'can-check' : 'cannot-check'}}">
+        {{statusText}}
+      </text>
+    </view>
+  </view>
+
+  <!-- 打卡按钮区域 -->
+  <view class="checkin-buttons">
+    <button 
+      class="checkin-btn checkin-in {{todaySummary.checkedIn ? 'disabled' : ''}}" 
+      disabled="{{!canCheckin || loading || todaySummary.checkedIn}}"
+      bindtap="doCheckinIn" style="position: relative; left: -1rpx; top: -1rpx">
+      <text class="btn-icon">☀️</text>
+      <text class="btn-text">{{todaySummary.checkedIn ? '已上班打卡' : '上班打卡'}}</text>
+    </button>
+    
+    <button 
+      class="checkin-btn checkin-out {{todaySummary.checkedOut ? 'disabled' : ''}}" 
+      disabled="{{!canCheckin || loading || todaySummary.checkedOut}}"
+      bindtap="doCheckinOut">
+      <text class="btn-icon">🌙</text>
+      <text class="btn-text">{{todaySummary.checkedOut ? '已下班打卡' : '下班打卡'}}</text>
+    </button>
+  </view>
+
+  <!-- 功能按钮 -->
+  <view class="function-buttons">
+    <button class="function-btn" bindtap="showMakeupApplication">
+      <text>补卡申请</text>
+    </button>
+    <button class="function-btn" bindtap="viewHistory">
+      <text>打卡记录</text>
+    </button>
+    <button class="function-btn" bindtap="refreshConfig">
+      <text>刷新配置</text>
+    </button>
+  </view>
+
+  <!-- 今日打卡记录 -->
+  <view class="records-section" wx:if="{{todayRecords.length > 0}}">
+    <view class="section-title">今日打卡记录</view>
+    <view class="records-list">
+      <view class="record-item" wx:for="{{todayRecords}}" wx:key="id">
+        <text class="record-type {{item.checkin_type === 'in' ? 'type-in' : 'type-out'}}">
+          {{item.checkin_type === 'in' ? '上班' : '下班'}}
+        </text>
+        <text class="record-time">{{item.checkin_time}}</text>
+        <text class="record-status {{item.checkin_status}}">{{item.checkin_status === 'normal' ? '正常' : item.abnormal_reason}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 补卡对话框 -->
+  <view class="makeup-dialog" wx:if="{{showMakeupDialog}}">
+    <view class="dialog-mask" bindtap="hideMakeupDialog"></view>
+    <view class="dialog-content">
+      <view class="dialog-header">
+        <text class="dialog-title">补卡申请</text>
+        <text class="dialog-close" bindtap="hideMakeupDialog">×</text>
+      </view>
+      
+      <view class="dialog-body">
+        <view class="form-item">
+          <text class="form-label">补卡日期：</text>
+          <picker mode="date" value="{{makeupDate}}" bindchange="onMakeupDateChange">
+            <view class="picker">
+              {{makeupDate || '请选择日期'}}
+            </view>
+          </picker>
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">补卡类型：</text>
+          <radio-group bindchange="onMakeupTypeChange">
+            <label class="radio-label">
+              <radio value="in" checked="{{makeupType === 'in'}}" />上班
+            </label>
+            <label class="radio-label">
+              <radio value="out" checked="{{makeupType === 'out'}}" />下班
+            </label>
+          </radio-group>
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">补卡原因：</text>
+          <textarea 
+            class="form-textarea" 
+            placeholder="请输入补卡原因" 
+            value="{{makeupReason}}"
+            bindinput="onMakeupReasonInput">
+          </textarea>
+        </view>
+      </view>
+      
+      <view class="dialog-footer">
+        <button class="dialog-btn cancel" bindtap="hideMakeupDialog">取消</button>
+        <button class="dialog-btn confirm" bindtap="submitMakeup">提交</button>
       </view>
     </view>
   </view>
