@@ -14,6 +14,18 @@ Page({
     // 检查是否已登录
     const userInfo = wx.getStorageSync('userInfo')
     if (userInfo) {
+      // 根据角色跳转到不同页面
+      this.navigateByRole(userInfo.role)
+    }
+  },
+
+  // 添加新方法：根据角色导航到不同页面
+  navigateByRole(role) {
+    if (role === 'admin') {
+      wx.reLaunch({
+        url: '/pages/admin/dashboard/dashboard'
+      })
+    } else {
       wx.reLaunch({
         url: '/pages/index/index'
       })
@@ -59,7 +71,7 @@ Page({
     })
   },
 
-  // 登录
+  // 登录 - 修改这个方法
   async login() {
     const { username, password } = this.data
     
@@ -102,11 +114,9 @@ Page({
           icon: 'success'
         })
         
-        // 跳转到首页
+        // 修改：根据角色跳转到不同页面
         setTimeout(() => {
-          wx.reLaunch({
-            url: '/pages/index/index'
-          })
+          this.navigateByRole(res.data.user.role)
         }, 1000)
       } else {
         wx.showToast({
@@ -125,7 +135,7 @@ Page({
     }
   },
 
-  // 注册
+  // 注册 - 保持不变
   async register() {
     const { username, phone, password, confirmPassword } = this.data
     
@@ -173,43 +183,44 @@ Page({
     this.setData({ loading: true })
 
     try {
-      const res = await api.register({
-        username,
-        phone,
-        password,
-        confirmPassword,
-        company_id: 1,
-        openid: `test_${Date.now()}`
-      })
-      
-      if (res.code === 200) {
-        wx.showToast({
-          title: '注册成功',
-          icon: 'success'
+        const res = await api.register({
+          username,
+          phone,
+          password,
+          confirmPassword,
+          company_id: 1,
+          openid: `test_${Date.now()}`
         })
         
-        // 注册成功后切换到登录模式
-        setTimeout(() => {
-          this.setData({
-            isRegister: false,
-            password: '',
-            confirmPassword: ''
+        if (res.code === 200) {
+          wx.showToast({
+            title: '注册成功，请等待审核', // 改进提示
+            icon: 'success',
+            duration: 2000
           })
-        }, 1000)
-      } else {
+          
+          // 注册成功后切换到登录模式
+          setTimeout(() => {
+            this.setData({
+              isRegister: false,
+              password: '',
+              confirmPassword: ''
+            })
+          }, 2000)
+        } else {
+          wx.showToast({
+            title: res.message || '注册失败',
+            icon: 'none'
+          })
+        }
+      } catch (error) {
+        console.error('注册失败:', error)
         wx.showToast({
-          title: res.message || '注册失败',
+          title: '注册失败',
           icon: 'none'
         })
+      } finally {
+        this.setData({ loading: false })
       }
-    } catch (error) {
-      console.error('注册失败:', error)
-      wx.showToast({
-        title: '注册失败',
-        icon: 'none'
-      })
-    } finally {
-      this.setData({ loading: false })
     }
-  }
 })

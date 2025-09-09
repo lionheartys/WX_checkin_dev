@@ -5,7 +5,12 @@
       "pages/checkin/checkin",
       "pages/history/history",
       "pages/profile/profile",
-      "pages/logs/logs"
+      "pages/logs/logs",
+      "pages/admin/dashboard/dashboard",
+      "pages/admin/userAudit/userAudit",
+      "pages/admin/checkinRecords/checkinRecords",
+      "pages/admin/userManagement/userManagement",
+      "pages/admin/statistics/statistics"
     ],
     "window": {
       "backgroundTextStyle": "light",

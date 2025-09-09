@@ -1,0 +1,34 @@
+<!-- pages/admin/userAudit/userAudit.wxml -->
+<view class="container">
+  <!-- 如果有标签栏，确保方法名正确 -->
+  <!-- <view bindtap="switchTab" data-tab="dashboard">返回</view> -->
+  
+  <view class="header">
+    <text class="title">用户审核</text>
+  </view>
+
+  <!-- 待审核用户列表 -->
+  <view class="user-list">
+    <view wx:if="{{pendingUsers.length === 0}}" class="empty">
+      <text>暂无待审核用户</text>
+    </view>
+    
+    <view wx:for="{{pendingUsers}}" wx:key="id" class="user-card">
+      <view class="user-info">
+        <text class="name">{{item.name}}</text>
+        <text class="department">{{item.department}}</text>
+        <text class="phone">{{item.phone}}</text>
+        <text class="time">申请时间：{{item.createdAt}}</text>
+      </view>
+      
+      <view class="actions">
+        <button class="approve-btn" bindtap="approveUser" data-id="{{item.id}}">
+          通过
+        </button>
+        <button class="reject-btn" bindtap="rejectUser" data-id="{{item.id}}">
+          拒绝
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

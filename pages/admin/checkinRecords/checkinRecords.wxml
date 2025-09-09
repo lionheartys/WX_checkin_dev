@@ -1,0 +1,55 @@
+<view class="checkin-records">
+  <view class="header">
+    <text class="title">打卡记录</text>
+  </view>
+
+  <!-- 筛选栏 -->
+  <view class="filter-bar">
+    <picker mode="date" value="{{selectedDate}}" bindchange="onDateChange">
+      <view class="filter-item">
+        <text>日期：{{selectedDate || '选择日期'}}</text>
+      </view>
+    </picker>
+    
+    <picker range="{{statusOptions}}" range-key="label" value="{{statusIndex}}" bindchange="onStatusChange">
+      <view class="filter-item">
+        <text>状态：{{statusOptions[statusIndex].label}}</text>
+      </view>
+    </picker>
+  </view>
+
+  <!-- 记录列表 -->
+  <view class="record-list">
+    <view wx:for="{{records}}" wx:key="id" class="record-card">
+      <view class="record-header">
+        <text class="username">{{item.username}}</text>
+        <text class="status status-{{item.checkin_status}}">
+          {{statusMap[item.checkin_status]}}
+        </text>
+      </view>
+      
+      <view class="record-info">
+        <view class="info-row">
+          <text class="label">打卡类型：</text>
+          <text class="value">{{item.checkin_type === 'in' ? '上班' : '下班'}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">打卡时间：</text>
+          <text class="value">{{item.checkin_time}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">手机号：</text>
+          <text class="value">{{item.phone}}</text>
+        </view>
+        <view class="info-row" wx:if="{{item.remark}}">
+          <text class="label">备注：</text>
+          <text class="value">{{item.remark}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{records.length === 0}}" class="empty">
+    <text>暂无打卡记录</text>
+  </view>
+</view>
