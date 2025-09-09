@@ -17,6 +17,9 @@ const entryRoutes = require('./routes/entry');
 const checkinRoutes = require('./routes/checkin');
 const leaveRoutes = require('./routes/leave');
 const statisticsRoutes = require('./routes/statistics');
+const adminRoutes = require('./routes/admin'); 
+
+
 // 添加测试
 const testRoutes = require('./routes/test');
 
@@ -37,6 +40,7 @@ app.use('/api/entry', entryRoutes);
 app.use('/api/checkin', checkinRoutes);
 app.use('/api/leave', leaveRoutes);
 app.use('/api/statistics', statisticsRoutes);
+app.use('/api/admin', adminRoutes); 
 // 添加测试
 app.use('/api/test', testRoutes);
 
