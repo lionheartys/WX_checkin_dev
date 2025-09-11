@@ -10,7 +10,10 @@
       "pages/admin/userAudit/userAudit",
       "pages/admin/checkinRecords/checkinRecords",
       "pages/admin/userManagement/userManagement",
-      "pages/admin/statistics/statistics"
+      "pages/admin/statistics/statistics",
+      "pages/admin/makeupAudit/makeupAudit",
+      "pages/leave/leave",
+      "pages/admin/leaveAudit/leaveAudit"
     ],
     "window": {
       "backgroundTextStyle": "light",

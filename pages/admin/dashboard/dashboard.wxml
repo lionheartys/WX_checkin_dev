@@ -39,8 +39,24 @@
       </view>
     </view>
     
-    <view class="module-card" bindtap="goToCheckinRecords">
+    <view class="module-card" bindtap="goToMakeupAudit">
+      <view class="module-icon">✏️</view>
+      <view class="module-name">补卡审核</view>
+      <view class="module-badge" wx:if="{{statistics.pendingMakeup > 0}}">
+        {{statistics.pendingMakeup}}
+      </view>
+    </view>
+    
+    <view class="module-card" bindtap="goToLeaveAudit">
       <view class="module-icon">📋</view>
+      <view class="module-name">请假审核</view>
+      <view class="module-badge" wx:if="{{statistics.pendingLeave > 0}}">
+        {{statistics.pendingLeave}}
+      </view>
+    </view>
+    
+    <view class="module-card" bindtap="goToCheckinRecords">
+      <view class="module-icon">📊</view>
       <view class="module-name">打卡记录</view>
     </view>
     

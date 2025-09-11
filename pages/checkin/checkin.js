@@ -437,8 +437,8 @@ async loadCheckinConfig() {
     }
   },
 
-  // 执行打卡
-  async executeCheckin(type, remark = '') {
+// 执行打卡
+async executeCheckin(type, remark = '') {
     const userInfo = this.data.userInfo || wx.getStorageSync('userInfo')
     if (!userInfo) {
       wx.showToast({
@@ -447,7 +447,7 @@ async loadCheckinConfig() {
       })
       return
     }
-
+  
     this.setData({ loading: true })
     
     wx.showLoading({
@@ -460,7 +460,7 @@ async loadCheckinConfig() {
         type: type,
         longitude: this.data.userLocation.longitude,
         latitude: this.data.userLocation.latitude,
-        remark: remark
+        remark: remark  // 传递备注信息
       }
       
       const res = await api.checkin(checkinData)
@@ -468,11 +468,52 @@ async loadCheckinConfig() {
       wx.hideLoading()
       
       if (res.code === 200) {
+        // 根据返回的状态显示不同的提示
+        let title = `${type === 'in' ? '上班' : '下班'}打卡成功`
+        let icon = 'success'
+        
+        // 检查是否有异常状态
+        if (res.data && res.data.status) {
+          if (res.data.status === 'late') {
+            title = '打卡成功（迟到）'
+            icon = 'none'
+            
+            // 显示迟到详情
+            if (res.data.abnormalReason) {
+              setTimeout(() => {
+                wx.showModal({
+                  title: '打卡状态',
+                  content: res.data.abnormalReason,
+                  showCancel: false,
+                  confirmText: '知道了'
+                })
+              }, 1500)
+            }
+          } else if (res.data.status === 'early') {
+            title = '打卡成功（早退）'
+            icon = 'none'
+            
+            // 显示早退详情
+            if (res.data.abnormalReason) {
+              setTimeout(() => {
+                wx.showModal({
+                  title: '打卡状态',
+                  content: res.data.abnormalReason,
+                  showCancel: false,
+                  confirmText: '知道了'
+                })
+              }, 1500)
+            }
+          }
+        }
+        
         wx.showToast({
-          title: `${type === 'in' ? '上班' : '下班'}打卡成功`,
-          icon: 'success'
+          title: title,
+          icon: icon,
+          duration: 2000
         })
         
+        // 刷新今日记录和汇总
         setTimeout(() => {
           this.loadTodaySummary()
           this.loadTodayRecords()

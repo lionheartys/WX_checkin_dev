@@ -172,8 +172,88 @@ const api = {
       method: 'PUT',
       data: { status }
     })
+  },
+
+  // 获取补卡申请列表
+  adminGetMakeupApplications: (status = 'pending') => {
+    return request({
+      url: '/admin/makeup-applications',
+      method: 'GET',
+      data: { status }
+    })
+  },
+  
+  // 审批补卡申请
+  adminAuditMakeup: (data) => {
+    return request({
+      url: '/admin/audit-makeup',
+      method: 'POST',
+      data
+    })
+  },
+  // 获取请假类型列表
+getLeaveTypes: () => {
+    return request({
+      url: '/leave/types',
+      method: 'GET'
+    })
+  },
+  
+  // 申请请假
+  applyLeave: (data) => {
+    return request({
+      url: '/leave/apply',
+      method: 'POST',
+      data
+    })
+  },
+  
+  // 申请调休额度
+  applyCompensatory: (data) => {
+    return request({
+      url: '/leave/compensatory/apply',
+      method: 'POST',
+      data
+    })
+  },
+  
+  // 获取请假记录
+  getLeaveApplications: (userId) => {
+    return request({
+      url: `/leave/applications/${userId}`,
+      method: 'GET'
+    })
+  },
+  
+  // 获取调休额度
+  getCompensatoryQuota: (userId) => {
+    return request({
+      url: `/leave/compensatory/quota/${userId}`,
+      method: 'GET'
+    })
+  },
+
+  // 获取请假申请列表
+adminGetLeaveApplications: (status = 'pending') => {
+    return request({
+      url: '/admin/leave-applications',
+      method: 'GET',
+      data: { status }
+    })
+  },
+  
+  // 审批请假申请
+  adminAuditLeave: (data) => {
+    return request({
+      url: '/admin/audit-leave',
+      method: 'POST',
+      data
+    })
   }
 }
+
+
+
 
 // 导出api对象
 module.exports = api

@@ -8,7 +8,8 @@ Page({
       pendingUsers: 0,
       todayCheckins: 0,
       totalUsers: 0,
-      abnormalToday: 0
+      abnormalToday: 0,
+      pendingMakeup: 0  // 新增待审核补卡数
     }
   },
 
@@ -17,11 +18,13 @@ Page({
       userInfo: wx.getStorageSync('userInfo')
     })
     this.getStatistics()
+    this.getPendingMakeupCount()  // 获取待审核补卡数
   },
 
   onShow() {
     // 每次显示页面时刷新统计数据
     this.getStatistics()
+    this.getPendingMakeupCount()
   },
 
   // 获取统计数据
@@ -34,11 +37,25 @@ Page({
       
       if (res.code === 200) {
         this.setData({
-          statistics: res.data
+          statistics: { ...this.data.statistics, ...res.data }
         })
       }
     } catch (error) {
       console.error('获取统计数据失败:', error)
+    }
+  },
+
+  // 获取待审核补卡申请数量
+  async getPendingMakeupCount() {
+    try {
+      const res = await api.adminGetMakeupApplications('pending')
+      if (res.code === 200) {
+        this.setData({
+          'statistics.pendingMakeup': res.data.length
+        })
+      }
+    } catch (error) {
+      console.error('获取待审核补卡数失败:', error)
     }
   },
 
@@ -67,6 +84,20 @@ Page({
   goToStatistics() {
     wx.navigateTo({
       url: '/pages/admin/statistics/statistics'
+    })
+  },
+
+  // 跳转到补卡审核页面
+  goToMakeupAudit() {
+    wx.navigateTo({
+      url: '/pages/admin/makeupAudit/makeupAudit'
+    })
+  },
+
+  // 跳转到请假审核页面
+  goToLeaveAudit() {
+    wx.navigateTo({
+      url: '/pages/admin/leaveAudit/leaveAudit'
     })
   },
 

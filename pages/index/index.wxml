@@ -1,48 +1,91 @@
+<!--pages/index/index.wxml-->
 <view class="container">
+  <!-- 顶部背景装饰 -->
+  <view class="header-bg"></view>
+  
   <!-- 用户信息卡片 -->
   <view class="user-card">
-    <view class="user-info">
-      <text class="username">{{userInfo.username}}</text>
-      <text class="role">{{roleText}}</text>
+    <view class="user-avatar-section">
+      <view class="avatar-wrapper">
+        <view class="avatar">{{userInfo.username ? userInfo.username[0] : '用'}}</view>
+      </view>
     </view>
+    
+    <view class="user-info">
+      <text class="username">{{userInfo.username || '用户'}}</text>
+      <view class="role-badge">
+        <text class="role-text">{{roleText}}</text>
+      </view>
+    </view>
+    
     <view class="today-status">
       <text class="date">{{currentDate}}</text>
-      <text class="status {{checkinStatus.class}}">{{checkinStatus.text}}</text>
+      <view class="status-badge {{checkinStatus.class}}">
+        <view class="status-dot"></view>
+        <text class="status-text">{{checkinStatus.text}}</text>
+      </view>
     </view>
   </view>
 
   <!-- 快速操作 -->
   <view class="quick-actions">
-    <view class="action-item" bindtap="goToCheckin">
-      <view class="action-icon checkin"></view>
-      <text class="action-text">打卡</text>
-    </view>
+    <!-- <view class="action-item" catchtap="goToCheckin">
+      <view class="action-icon-wrapper checkin">
+        <text class="iconfont icon-checkin">📍</text>
+      </view>
+      <text class="action-text">打卡签到</text>
+      <text class="action-desc">快速打卡</text>
+    </view> -->
+    
     <view class="action-item" bindtap="goToHistory">
-      <view class="action-icon history"></view>
-      <text class="action-text">记录</text>
+      <view class="action-icon-wrapper history">
+        <text class="iconfont icon-history">📊</text>
+      </view>
+      <text class="action-text">考勤记录</text>
+      <text class="action-desc">查看历史</text>
     </view>
+    
     <view class="action-item" bindtap="goToLeave">
-      <view class="action-icon leave"></view>
-      <text class="action-text">请假</text>
+      <view class="action-icon-wrapper leave">
+        <text class="iconfont icon-leave">📝</text>
+      </view>
+      <text class="action-text">请假申请</text>
+      <text class="action-desc">在线申请</text>
     </view>
   </view>
 
   <!-- 今日打卡记录 -->
   <view class="today-records">
-    <view class="section-title">今日打卡</view>
+    <view class="section-header">
+      <text class="section-title">今日打卡</text>
+      <text class="section-more" bindtap="goToHistory">查看全部 ></text>
+    </view>
+    
     <view class="records-list">
       <view class="record-item" wx:for="{{todayRecords}}" wx:key="id">
-        <view class="record-type {{item.checkin_type}}">
-          {{item.checkin_type === 'in' ? '上班' : '下班'}}
+        <view class="record-left">
+          <view class="record-icon {{item.checkin_type}}">
+            <text>{{item.checkin_type === 'in' ? '签' : '退'}}</text>
+          </view>
+          <view class="record-info">
+            <text class="record-type-text">{{item.checkin_type === 'in' ? '上班打卡' : '下班打卡'}}</text>
+            <text class="record-time">{{item.time}}</text>
+          </view>
         </view>
-        <view class="record-time">{{item.time}}</view>
-        <view class="record-status {{item.checkin_status}}">
-          {{item.statusText}}
+        <view class="record-status-badge {{item.checkin_status}}">
+          <text>{{item.statusText}}</text>
         </view>
       </view>
+      
+      <!-- 无记录提示 -->
       <view class="no-records" wx:if="{{todayRecords.length === 0}}">
-        今日暂无打卡记录
+        <view class="no-records-icon">📭</view>
+        <text class="no-records-text">今日暂无打卡记录</text>
+        <text class="no-records-tips">快去打卡吧~</text>
       </view>
     </view>
   </view>
+
+  <!-- 底部装饰 -->
+  <view class="bottom-decoration"></view>
 </view>

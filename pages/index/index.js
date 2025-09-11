@@ -113,6 +113,7 @@ Page({
 
   // 跳转到打卡页面
   goToCheckin() {
+    console.log('快速打卡点击事件触发');
     wx.navigateTo({
       url: '/pages/checkin/checkin'
     })
@@ -125,11 +126,10 @@ Page({
     })
   },
 
-  // 跳转到请假页面
-  goToLeave() {
-    wx.showToast({
-      title: '功能开发中',
-      icon: 'none'
+ // 跳转到请假页面
+goToLeave() {
+    wx.navigateTo({
+      url: '/pages/leave/leave'
     })
   }
 })

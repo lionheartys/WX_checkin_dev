@@ -1,0 +1,108 @@
+<!--pages/admin/makeupAudit/makeupAudit.wxml-->
+<view class="makeup-audit-page">
+  <!-- 顶部标题 -->
+  <view class="page-header">
+    <text class="page-title">补卡审核管理</text>
+  </view>
+
+  <!-- 标签栏 -->
+  <view class="tabs">
+    <view 
+      class="tab-item {{activeTab === tab.key ? 'active' : ''}}"
+      wx:for="{{tabs}}"
+      wx:key="key"
+      data-tab="{{tab.key}}"
+      bindtap="switchTab"
+    >
+      <text>{{tab.title}}</text>
+      <text class="tab-count" wx:if="{{tab.count > 0}}">({{tab.count}})</text>
+    </view>
+  </view>
+
+  <!-- 加载提示 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 申请列表 -->
+  <view wx:elif="{{applications.length > 0}}" class="application-list">
+    <view class="application-card" wx:for="{{applications}}" wx:key="id">
+      <!-- 卡片头部 -->
+      <view class="card-header">
+        <view class="user-info">
+          <text class="username">{{item.username}}</text>
+          <text class="phone">{{item.phone}}</text>
+        </view>
+        <view class="status-badge {{item.status}}">
+          <text wx:if="{{item.status === 'pending'}}">待审核</text>
+          <text wx:elif="{{item.status === 'approved'}}">已通过</text>
+          <text wx:else>已拒绝</text>
+        </view>
+      </view>
+
+      <!-- 卡片内容 -->
+      <view class="card-content">
+        <view class="info-row">
+          <text class="info-label">项目：</text>
+          <text class="info-value">{{item.project_name}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">地点：</text>
+          <text class="info-value">{{item.location_name}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">补卡日期：</text>
+          <text class="info-value">{{item.formatDate}} {{item.typeText}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">申请理由：</text>
+          <text class="info-value">{{item.reason}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">申请时间：</text>
+          <text class="info-value">{{item.formatCreateTime}}</text>
+        </view>
+        
+        <!-- 已审批的显示审批信息 -->
+        <block wx:if="{{item.status !== 'pending'}}">
+          <view class="info-row">
+            <text class="info-label">审批时间：</text>
+            <text class="info-value">{{item.formatApproveTime}}</text>
+          </view>
+          <view class="info-row" wx:if="{{item.approve_remark}}">
+            <text class="info-label">审批备注：</text>
+            <text class="info-value">{{item.approve_remark}}</text>
+          </view>
+        </block>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="card-footer">
+        <button 
+          class="btn-detail" 
+          size="mini"
+          data-index="{{index}}"
+          bindtap="viewDetail"
+        >
+          查看详情
+        </button>
+        <button 
+          wx:if="{{item.status === 'pending'}}"
+          class="btn-audit" 
+          size="mini"
+          type="primary"
+          data-index="{{index}}"
+          bindtap="showAuditDialog"
+        >
+          审批
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:else class="empty-container">
+    <view class="empty-icon">📭</view>
+    <text class="empty-text">暂无{{activeTab === 'pending' ? '待审核' : activeTab === 'approved' ? '已通过' : '已拒绝'}}的补卡申请</text>
+  </view>
+</view>
