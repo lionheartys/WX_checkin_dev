@@ -223,9 +223,18 @@ router.post('/audit-makeup', async (req, res) => {
       
       if (application[0]) {
         const app = application[0];
+        
+        // 格式化日期为 YYYY-MM-DD 格式
+        const makeupDate = new Date(app.makeup_date);
+        const year = makeupDate.getFullYear();
+        const month = String(makeupDate.getMonth() + 1).padStart(2, '0');
+        const day = String(makeupDate.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+        
+        // 构建正确格式的打卡时间
         const checkinTime = app.makeup_type === 'in' 
-          ? `${app.makeup_date} 09:00:00`
-          : `${app.makeup_date} 18:00:00`;
+          ? `${formattedDate} 09:00:00`
+          : `${formattedDate} 18:00:00`;
         
         await connection.query(
           `INSERT INTO checkin_records 
@@ -618,6 +627,93 @@ router.post('/audit-leave', async (req, res) => {
       code: 500,
       message: '审批请假失败',
       data: null 
+    });
+  } finally {
+    connection.release();
+  }
+});
+
+// 16. 获取待审批数量统计（包括请假）
+router.get('/pending-counts', async (req, res) => {
+  try {
+    const { company_id } = req.user;
+    
+    // 获取待审核用户数
+    const [users] = await pool.query(
+      'SELECT COUNT(*) as count FROM users WHERE company_id = ? AND status = "pending"',
+      [company_id]
+    );
+    
+    // 获取待审核补卡数
+    const [makeup] = await pool.query(
+      `SELECT COUNT(*) as count FROM makeup_applications ma
+       INNER JOIN users u ON ma.user_id = u.id
+       WHERE u.company_id = ? AND ma.status = 'pending'`,
+      [company_id]
+    );
+    
+    // 获取待审核请假数
+    const [leave] = await pool.query(
+      `SELECT COUNT(*) as count FROM leave_applications la
+       INNER JOIN users u ON la.user_id = u.id
+       WHERE u.company_id = ? AND la.status = 'pending'`,
+      [company_id]
+    );
+    
+    res.json({
+      code: 200,
+      data: {
+        pendingUsers: users[0].count,
+        pendingMakeup: makeup[0].count,
+        pendingLeave: leave[0].count
+      }
+    });
+  } catch (error) {
+    console.error('获取待审批数量失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '获取失败'
+    });
+  }
+});
+
+// 17. 批量审批请假（可选）
+router.post('/batch-audit-leave', async (req, res) => {
+  const connection = await pool.getConnection();
+  try {
+    const { application_ids, status, remark } = req.body;
+    const admin_id = req.user.id;
+    
+    await connection.beginTransaction();
+    
+    let successCount = 0;
+    for (const id of application_ids) {
+      try {
+        await connection.query(
+          `UPDATE leave_applications 
+           SET status = ?, approver_id = ?, approve_time = NOW(), approve_remark = ?
+           WHERE id = ?`,
+          [status, admin_id, remark || '批量审批', id]
+        );
+        successCount++;
+      } catch (err) {
+        console.error(`审批ID ${id} 失败:`, err);
+      }
+    }
+    
+    await connection.commit();
+    
+    res.json({
+      code: 200,
+      message: `批量审批完成，成功处理 ${successCount}/${application_ids.length} 个申请`,
+      data: { successCount }
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error('批量审批失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '批量审批失败'
     });
   } finally {
     connection.release();
