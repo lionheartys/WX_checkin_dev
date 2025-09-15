@@ -101,6 +101,13 @@ Page({
     })
   },
 
+  // 跳转到打卡地管理页面
+  goToLocationManagement() {
+    wx.navigateTo({
+      url: '/pages/admin/locationManagement/locationManagement'
+    })
+  },
+
   // 退出登录
   logout() {
     wx.showModal({

@@ -64,6 +64,11 @@
       <view class="module-icon">⚙️</view>
       <view class="module-name">用户管理</view>
     </view>
+
+    <view class="module-card" bindtap="goToLocationManagement">
+      <view class="module-icon">📍</view>
+      <view class="module-name">打卡地管理</view>
+    </view>
     
     <view class="module-card" bindtap="goToStatistics">
       <view class="module-icon">📊</view>

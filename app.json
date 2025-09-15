@@ -13,7 +13,8 @@
       "pages/admin/statistics/statistics",
       "pages/admin/makeupAudit/makeupAudit",
       "pages/leave/leave",
-      "pages/admin/leaveAudit/leaveAudit"
+      "pages/admin/leaveAudit/leaveAudit",
+      "pages/admin/locationManagement/locationManagement"
     ],
     "window": {
       "backgroundTextStyle": "light",

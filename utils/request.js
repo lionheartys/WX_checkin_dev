@@ -249,6 +249,58 @@ adminGetLeaveApplications: (status = 'pending') => {
       method: 'POST',
       data
     })
+  },
+
+  // 获取打卡地列表
+adminGetCheckinLocations: (status) => {
+    return request({
+      url: '/admin/checkin-locations',
+      method: 'GET',
+      data: status !== undefined ? { status } : {}
+    })
+  },
+  
+  // 添加打卡地
+  adminAddCheckinLocation: (data) => {
+    return request({
+      url: '/admin/checkin-location',
+      method: 'POST',
+      data
+    })
+  },
+  
+  // 更新打卡地
+  adminUpdateCheckinLocation: (id, data) => {
+    return request({
+      url: `/admin/checkin-location/${id}`,
+      method: 'PUT',
+      data
+    })
+  },
+  
+  // 更新打卡地状态
+  adminUpdateLocationStatus: (id, status) => {
+    return request({
+      url: `/admin/checkin-location/${id}/status`,
+      method: 'PUT',
+      data: { status }
+    })
+  },
+  
+  // 删除打卡地
+  adminDeleteCheckinLocation: (id) => {
+    return request({
+      url: `/admin/checkin-location/${id}`,
+      method: 'DELETE'
+    })
+  },
+  
+  // 获取项目列表
+  adminGetProjects: () => {
+    return request({
+      url: '/admin/projects',
+      method: 'GET'
+    })
   }
 }
 
