@@ -272,158 +272,158 @@ router.post('/audit-makeup', async (req, res) => {
   }
 });
 
-// 7. 获取打卡地点列表
-router.get('/checkin-locations', async (req, res) => {
-  try {
-    const { company_id } = req.user;
-    const query = `
-      SELECT cl.*, p.project_name, p.general_unit
-      FROM checkin_locations cl
-      INNER JOIN projects p ON cl.project_id = p.id
-      INNER JOIN users u ON p.manager_id = u.id
-      WHERE u.company_id = ?
-      ORDER BY p.project_name, cl.location_name
-    `;
+// // 7. 获取打卡地点列表
+// router.get('/checkin-locations', async (req, res) => {
+//   try {
+//     const { company_id } = req.user;
+//     const query = `
+//       SELECT cl.*, p.project_name, p.general_unit
+//       FROM checkin_locations cl
+//       INNER JOIN projects p ON cl.project_id = p.id
+//       INNER JOIN users u ON p.manager_id = u.id
+//       WHERE u.company_id = ?
+//       ORDER BY p.project_name, cl.location_name
+//     `;
     
-    const [locations] = await pool.query(query, [company_id]);
-    res.json({ 
-      code: 200,
-      message: '获取成功',
-      data: locations 
-    });
-  } catch (error) {
-    console.error('获取打卡地点失败:', error);
-    res.status(500).json({ 
-      code: 500,
-      message: '获取打卡地点失败',
-      data: null 
-    });
-  }
-});
+//     const [locations] = await pool.query(query, [company_id]);
+//     res.json({ 
+//       code: 200,
+//       message: '获取成功',
+//       data: locations 
+//     });
+//   } catch (error) {
+//     console.error('获取打卡地点失败:', error);
+//     res.status(500).json({ 
+//       code: 500,
+//       message: '获取打卡地点失败',
+//       data: null 
+//     });
+//   }
+// });
 
-// 8. 创建打卡地点
-router.post('/checkin-location', async (req, res) => {
-  try {
-    const {
-      project_id,
-      location_name,
-      longitude,
-      latitude,
-      work_start_time,
-      work_end_time,
-      checkin_range,
-      abnormal_threshold
-    } = req.body;
+// // 8. 创建打卡地点
+// router.post('/checkin-location', async (req, res) => {
+//   try {
+//     const {
+//       project_id,
+//       location_name,
+//       longitude,
+//       latitude,
+//       work_start_time,
+//       work_end_time,
+//       checkin_range,
+//       abnormal_threshold
+//     } = req.body;
     
-    const admin_id = req.user.id;
+//     const admin_id = req.user.id;
     
-    const [result] = await pool.query(
-      `INSERT INTO checkin_locations 
-       (project_id, location_name, longitude, latitude, work_start_time, 
-        work_end_time, checkin_range, abnormal_threshold)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [project_id, location_name, longitude, latitude, work_start_time,
-       work_end_time, checkin_range || 200, abnormal_threshold || 30]
-    );
+//     const [result] = await pool.query(
+//       `INSERT INTO checkin_locations 
+//        (project_id, location_name, longitude, latitude, work_start_time, 
+//         work_end_time, checkin_range, abnormal_threshold)
+//        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+//       [project_id, location_name, longitude, latitude, work_start_time,
+//        work_end_time, checkin_range || 200, abnormal_threshold || 30]
+//     );
     
-    // 记录操作日志
-    await pool.query(
-      `INSERT INTO operation_logs (user_id, operation_type, target_type, target_id, operation_detail)
-       VALUES (?, 'create_location', 'checkin_location', ?, ?)`,
-      [admin_id, result.insertId, JSON.stringify(req.body)]
-    );
+//     // 记录操作日志
+//     await pool.query(
+//       `INSERT INTO operation_logs (user_id, operation_type, target_type, target_id, operation_detail)
+//        VALUES (?, 'create_location', 'checkin_location', ?, ?)`,
+//       [admin_id, result.insertId, JSON.stringify(req.body)]
+//     );
     
-    res.json({ 
-      code: 200,
-      message: '创建成功',
-      data: { id: result.insertId }
-    });
-  } catch (error) {
-    console.error('创建打卡地点失败:', error);
-    res.status(500).json({ 
-      code: 500,
-      message: '创建打卡地点失败',
-      data: null 
-    });
-  }
-});
+//     res.json({ 
+//       code: 200,
+//       message: '创建成功',
+//       data: { id: result.insertId }
+//     });
+//   } catch (error) {
+//     console.error('创建打卡地点失败:', error);
+//     res.status(500).json({ 
+//       code: 500,
+//       message: '创建打卡地点失败',
+//       data: null 
+//     });
+//   }
+// });
 
-// 9. 更新打卡地点
-router.put('/checkin-location/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const {
-      location_name,
-      longitude,
-      latitude,
-      work_start_time,
-      work_end_time,
-      checkin_range,
-      abnormal_threshold,
-      status
-    } = req.body;
+// // 9. 更新打卡地点
+// router.put('/checkin-location/:id', async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const {
+//       location_name,
+//       longitude,
+//       latitude,
+//       work_start_time,
+//       work_end_time,
+//       checkin_range,
+//       abnormal_threshold,
+//       status
+//     } = req.body;
     
-    const admin_id = req.user.id;
+//     const admin_id = req.user.id;
     
-    await pool.query(
-      `UPDATE checkin_locations 
-       SET location_name = ?, longitude = ?, latitude = ?, 
-           work_start_time = ?, work_end_time = ?, 
-           checkin_range = ?, abnormal_threshold = ?, status = ?
-       WHERE id = ?`,
-      [location_name, longitude, latitude, work_start_time, work_end_time,
-       checkin_range, abnormal_threshold, status, id]
-    );
+//     await pool.query(
+//       `UPDATE checkin_locations 
+//        SET location_name = ?, longitude = ?, latitude = ?, 
+//            work_start_time = ?, work_end_time = ?, 
+//            checkin_range = ?, abnormal_threshold = ?, status = ?
+//        WHERE id = ?`,
+//       [location_name, longitude, latitude, work_start_time, work_end_time,
+//        checkin_range, abnormal_threshold, status, id]
+//     );
     
-    // 记录操作日志
-    await pool.query(
-      `INSERT INTO operation_logs (user_id, operation_type, target_type, target_id, operation_detail)
-       VALUES (?, 'update_location', 'checkin_location', ?, ?)`,
-      [admin_id, id, JSON.stringify(req.body)]
-    );
+//     // 记录操作日志
+//     await pool.query(
+//       `INSERT INTO operation_logs (user_id, operation_type, target_type, target_id, operation_detail)
+//        VALUES (?, 'update_location', 'checkin_location', ?, ?)`,
+//       [admin_id, id, JSON.stringify(req.body)]
+//     );
     
-    res.json({ 
-      code: 200,
-      message: '更新成功',
-      data: null 
-    });
-  } catch (error) {
-    console.error('更新打卡地点失败:', error);
-    res.status(500).json({ 
-      code: 500,
-      message: '更新打卡地点失败',
-      data: null 
-    });
-  }
-});
+//     res.json({ 
+//       code: 200,
+//       message: '更新成功',
+//       data: null 
+//     });
+//   } catch (error) {
+//     console.error('更新打卡地点失败:', error);
+//     res.status(500).json({ 
+//       code: 500,
+//       message: '更新打卡地点失败',
+//       data: null 
+//     });
+//   }
+// });
 
-// 10. 获取项目列表
-router.get('/projects', async (req, res) => {
-  try {
-    const { company_id } = req.user;
-    const query = `
-      SELECT p.*, u.username as manager_name
-      FROM projects p
-      LEFT JOIN users u ON p.manager_id = u.id
-      WHERE u.company_id = ?
-      ORDER BY p.project_name
-    `;
+// // 10. 获取项目列表
+// router.get('/projects', async (req, res) => {
+//   try {
+//     const { company_id } = req.user;
+//     const query = `
+//       SELECT p.*, u.username as manager_name
+//       FROM projects p
+//       LEFT JOIN users u ON p.manager_id = u.id
+//       WHERE u.company_id = ?
+//       ORDER BY p.project_name
+//     `;
     
-    const [projects] = await pool.query(query, [company_id]);
-    res.json({ 
-      code: 200,
-      message: '获取成功',
-      data: projects 
-    });
-  } catch (error) {
-    console.error('获取项目列表失败:', error);
-    res.status(500).json({ 
-      code: 500,
-      message: '获取项目列表失败',
-      data: null 
-    });
-  }
-});
+//     const [projects] = await pool.query(query, [company_id]);
+//     res.json({ 
+//       code: 200,
+//       message: '获取成功',
+//       data: projects 
+//     });
+//   } catch (error) {
+//     console.error('获取项目列表失败:', error);
+//     res.status(500).json({ 
+//       code: 500,
+//       message: '获取项目列表失败',
+//       data: null 
+//     });
+//   }
+// });
 
 // 11. 获取统计数据
 router.get('/statistics', async (req, res) => {
@@ -719,5 +719,260 @@ router.post('/batch-audit-leave', async (req, res) => {
     connection.release();
   }
 });
+
+
+// // 18. 获取打卡地列表
+// router.get('/checkin-locations', async (req, res) => {
+//   try {
+//     const { status } = req.query;
+    
+//     let query = `
+//       SELECT cl.*, p.project_name 
+//       FROM checkin_locations cl
+//       LEFT JOIN projects p ON cl.project_id = p.id
+//       WHERE 1=1
+//     `;
+    
+//     const params = [];
+    
+//     if (status !== undefined) {
+//       query += ' AND cl.status = ?';
+//       params.push(status);
+//     }
+    
+//     query += ' ORDER BY cl.created_at DESC';
+    
+//     const [locations] = await pool.query(query, params);
+    
+//     res.json({
+//       code: 200,
+//       message: '获取成功',
+//       data: locations
+//     });
+//   } catch (error) {
+//     console.error('获取打卡地列表失败:', error);
+//     res.status(500).json({
+//       code: 500,
+//       message: '获取失败',
+//       data: null
+//     });
+//   }
+// });
+
+// 后端查询打卡地列表
+router.get('/checkin-locations', async (req, res) => {
+  try {
+    const { status } = req.query;
+    
+    let query = `
+      SELECT cl.*, p.project_name 
+      FROM checkin_locations cl
+      LEFT JOIN projects p ON cl.project_id = p.id
+      WHERE 1=1
+    `;
+    
+    const params = [];
+    
+    if (status !== undefined) {
+      query += ' AND cl.status = ?';
+      params.push(status);
+    }
+    
+    query += ' ORDER BY cl.created_at DESC';
+    
+    const [locations] = await pool.query(query, params);
+
+    // 确认是否有数据
+    // console.log('查询到的打卡地数据:', locations);
+    
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: locations
+    });
+  } catch (error) {
+    console.error('获取打卡地列表失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '获取失败',
+      data: null
+    });
+  }
+});
+
+
+
+// 19. 添加打卡地
+router.post('/checkin-location', async (req, res) => {
+  try {
+    const {
+      project_id,
+      location_name,
+      longitude,
+      latitude,
+      work_start_time,
+      work_end_time,
+      checkin_range,
+      abnormal_threshold
+    } = req.body;
+    
+    const [result] = await pool.query(
+      `INSERT INTO checkin_locations 
+       (project_id, location_name, longitude, latitude, work_start_time, 
+        work_end_time, checkin_range, abnormal_threshold) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [project_id, location_name, longitude, latitude, work_start_time,
+       work_end_time, checkin_range || 200, abnormal_threshold || 30]
+    );
+    
+    res.json({
+      code: 200,
+      message: '添加成功',
+      data: { id: result.insertId }
+    });
+  } catch (error) {
+    console.error('添加打卡地失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '添加失败',
+      data: null
+    });
+  }
+});
+
+// 20. 更新打卡地
+router.put('/checkin-location/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      location_name,
+      longitude,
+      latitude,
+      work_start_time,
+      work_end_time,
+      checkin_range,
+      abnormal_threshold
+    } = req.body;
+    
+    await pool.query(
+      `UPDATE checkin_locations 
+       SET location_name = ?, longitude = ?, latitude = ?, 
+           work_start_time = ?, work_end_time = ?, 
+           checkin_range = ?, abnormal_threshold = ?
+       WHERE id = ?`,
+      [location_name, longitude, latitude, work_start_time,
+       work_end_time, checkin_range, abnormal_threshold, id]
+    );
+    
+    res.json({
+      code: 200,
+      message: '更新成功',
+      data: null
+    });
+  } catch (error) {
+    console.error('更新打卡地失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '更新失败',
+      data: null
+    });
+  }
+});
+
+// 21. 启用/禁用打卡地
+router.put('/checkin-location/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    await pool.query(
+      'UPDATE checkin_locations SET status = ? WHERE id = ?',
+      [status, id]
+    );
+    
+    res.json({
+      code: 200,
+      message: status === 1 ? '启用成功' : '禁用成功',
+      data: null
+    });
+  } catch (error) {
+    console.error('更新打卡地状态失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '操作失败',
+      data: null
+    });
+  }
+});
+
+// 22. 删除打卡地
+router.delete('/checkin-location/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    await pool.query('DELETE FROM checkin_locations WHERE id = ?', [id]);
+    
+    res.json({
+      code: 200,
+      message: '删除成功',
+      data: null
+    });
+  } catch (error) {
+    console.error('删除打卡地失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '删除失败',
+      data: null
+    });
+  }
+});
+
+// 23. 获取项目列表（用于选择）
+router.get('/projects', async (req, res) => {
+  try {
+    const [projects] = await pool.query(
+      // 'SELECT id, project_name FROM projects WHERE status = 1'
+      'SELECT id, project_name FROM projects'
+    );
+    
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: projects
+    });
+  } catch (error) {
+    console.error('获取项目列表失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '获取失败',
+      data: null
+    });
+  }
+});
+
+// // 23. 获取项目列表（用于选择）
+// router.get('/projects', async (req, res) => {
+//   try {
+//     console.log('获取项目列表请求');
+//     const [projects] = await pool.query(
+//       'SELECT id, project_name FROM projects WHERE status = 1'
+//     );
+    
+//     console.log('查询到的项目:', projects);
+    
+//     res.json({
+//       code: 200,
+//       message: '获取成功',
+//       data: projects
+//     });
+//   } catch (error) {
+//     console.error('获取项目列表失败:', error);
+//     res.status(500).json({
+//       code: 500,
+//       message: '获取失败',
+//       data: []
+//     });
+//   }
+// });
 
 module.exports = router;
