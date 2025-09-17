@@ -301,11 +301,136 @@ adminGetCheckinLocations: (status) => {
       url: '/admin/projects',
       method: 'GET'
     })
+  },
+
+  // 获取公司列表
+  adminGetCompanies: (params = {}) => {
+    return request({
+      url: '/admin/companies',
+      method: 'GET',
+      data: params
+    })
+  },
+  
+  // 添加公司
+  adminAddCompany: (data) => {
+    return request({
+      url: '/admin/company',
+      method: 'POST',
+      data
+    })
+  },
+  
+  // 更新公司信息
+  adminUpdateCompany: (id, data) => {
+    return request({
+      url: `/admin/company/${id}`,
+      method: 'PUT',
+      data
+    })
+  },
+  
+  // 更新公司状态
+  adminUpdateCompanyStatus: (id, status) => {
+    return request({
+      url: `/admin/company/${id}/status`,
+      method: 'PUT',
+      data: { status }
+    })
+  },
+  
+  // 删除公司
+  adminDeleteCompany: (id) => {
+    return request({
+      url: `/admin/company/${id}`,
+      method: 'DELETE'
+    })
+  },
+  
+  // 获取单个公司详情
+  adminGetCompanyDetail: (id) => {
+    return request({
+      url: `/admin/company/${id}`,
+      method: 'GET'
+    })
+  },
+  
+  // 批量更新公司有效期
+  adminBatchUpdateCompanyValidity: (data) => {
+    return request({
+      url: '/admin/companies/batch-update-validity',
+      method: 'PUT',
+      data
+    })
+  },
+
+  // 获取项目管理列表（带分页）
+adminGetProjectsManage: (params = {}) => {
+    return request({
+      url: '/admin/projects-manage',
+      method: 'GET',
+      data: params
+    })
+  },
+  
+  // 添加项目
+  adminAddProject: (data) => {
+    return request({
+      url: '/admin/project',
+      method: 'POST',
+      data
+    })
+  },
+  
+  // 更新项目信息
+  adminUpdateProject: (id, data) => {
+    return request({
+      url: `/admin/project/${id}`,
+      method: 'PUT',
+      data
+    })
+  },
+  
+  // 更新项目状态
+  adminUpdateProjectStatus: (id, status) => {
+    return request({
+      url: `/admin/project/${id}/status`,
+      method: 'PUT',
+      data: { status }
+    })
+  },
+  
+  // 删除项目
+  adminDeleteProject: (id) => {
+    return request({
+      url: `/admin/project/${id}`,
+      method: 'DELETE'
+    })
+  },
+  
+  // 获取单个项目详情
+  adminGetProjectDetail: (id) => {
+    return request({
+      url: `/admin/project/${id}`,
+      method: 'GET'
+    })
+  },
+  
+  // 获取可用的项目负责人列表
+  adminGetAvailableManagers: () => {
+    return request({
+      url: '/admin/available-managers',
+      method: 'GET'
+    })
+  },
+  
+  // 获取所有启用的公司列表（用于选择）
+  adminGetCompaniesSelect: () => {
+    return request({
+      url: '/admin/companies-select',
+      method: 'GET'
+    })
   }
 }
-
-
-
-
 // 导出api对象
 module.exports = api

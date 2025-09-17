@@ -69,9 +69,22 @@
       <view class="module-icon">📍</view>
       <view class="module-name">打卡地管理</view>
     </view>
+
+    <view class="module-card" bindtap="goToCompanyManagement">
+      <view class="module-icon">🏢</view>
+      <view class="module-name">公司管理</view>
+      <view class="module-badge" wx:if="{{statistics.expiringCompanies > 0}}" style="background-color: #ff9800;">
+        {{statistics.expiringCompanies}}
+      </view>
+    </view>
+
+    <view class="module-card" bindtap="goToProjectManagement">
+        <view class="module-icon">📁</view>
+        <view class="module-name">项目管理</view>
+    </view>
     
     <view class="module-card" bindtap="goToStatistics">
-      <view class="module-icon">📊</view>
+      <view class="module-icon">📈</view>
       <view class="module-name">数据统计</view>
     </view>
   </view>

@@ -9,7 +9,9 @@ Page({
       todayCheckins: 0,
       totalUsers: 0,
       abnormalToday: 0,
-      pendingMakeup: 0  // 新增待审核补卡数
+      pendingMakeup: 0,  // 待审核补卡数
+      totalCompanies: 0,  // 新增总公司数
+      expiringCompanies: 0  // 新增即将过期公司数
     }
   },
 
@@ -19,12 +21,14 @@ Page({
     })
     this.getStatistics()
     this.getPendingMakeupCount()  // 获取待审核补卡数
+    this.getCompanyStatistics()  // 获取公司统计数据
   },
 
   onShow() {
     // 每次显示页面时刷新统计数据
     this.getStatistics()
     this.getPendingMakeupCount()
+    this.getCompanyStatistics()
   },
 
   // 获取统计数据
@@ -56,6 +60,27 @@ Page({
       }
     } catch (error) {
       console.error('获取待审核补卡数失败:', error)
+    }
+  },
+
+  // 获取公司统计数据
+  async getCompanyStatistics() {
+    try {
+      const res = await api.adminGetCompanies({ page: 1, pageSize: 100 })
+      if (res.code === 200) {
+        const companies = res.data.list
+        const totalCompanies = res.data.total
+        const expiringCompanies = companies.filter(c => 
+          c.validity_status === 'expiring' || c.validity_status === 'expired'
+        ).length
+        
+        this.setData({
+          'statistics.totalCompanies': totalCompanies,
+          'statistics.expiringCompanies': expiringCompanies
+        })
+      }
+    } catch (error) {
+      console.error('获取公司统计数据失败:', error)
     }
   },
 
@@ -105,6 +130,20 @@ Page({
   goToLocationManagement() {
     wx.navigateTo({
       url: '/pages/admin/locationManagement/locationManagement'
+    })
+  },
+
+  // 跳转到公司管理页面
+  goToCompanyManagement() {
+    wx.navigateTo({
+      url: '/pages/admin/companyManagement/companyManagement'
+    })
+  },
+
+  // 跳转到项目管理页面
+  goToProjectManagement() {
+    wx.navigateTo({
+      url: '/pages/admin/projectManagement/projectManagement'
     })
   },
 

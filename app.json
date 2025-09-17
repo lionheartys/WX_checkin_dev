@@ -14,7 +14,9 @@
       "pages/admin/makeupAudit/makeupAudit",
       "pages/leave/leave",
       "pages/admin/leaveAudit/leaveAudit",
-      "pages/admin/locationManagement/locationManagement"
+      "pages/admin/locationManagement/locationManagement",
+      "pages/admin/companyManagement/companyManagement",
+      "pages/admin/projectManagement/projectManagement"
     ],
     "window": {
       "backgroundTextStyle": "light",

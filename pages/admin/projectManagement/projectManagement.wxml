@@ -1,0 +1,142 @@
+<!--pages/admin/projectManagement/projectManagement.wxml-->
+<view class="project-management">
+  <!-- 顶部搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrapper">
+      <input class="search-input" placeholder="搜索项目名称或总体单位" value="{{keyword}}" bindinput="onSearchInput" bindconfirm="onSearch" />
+      <button class="search-btn" size="mini" type="primary" bindtap="onSearch">搜索</button>
+    </view>
+    
+    <view class="filter-wrapper">
+      <picker bindchange="onStatusChange" value="{{selectedStatus}}" range="{{statusOptions}}" range-key="label">
+        <view class="filter-select">
+          状态：{{statusOptions[selectedStatus === '' ? 0 : selectedStatus === '1' ? 1 : 2].label}}
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-bar">
+    <button class="action-btn" type="primary" size="mini" bindtap="showAddProject">添加项目</button>
+  </view>
+
+  <!-- 项目列表 -->
+  <view class="project-list">
+    <view wx:if="{{projects.length === 0 && !loading}}" class="empty-tips">
+      暂无项目数据
+    </view>
+    
+    <view wx:for="{{projects}}" wx:key="id" class="project-item">
+      <view class="project-info">
+        <view class="project-name">{{item.project_name}}</view>
+        <view class="project-meta">
+          <text class="meta-item">总体单位：{{item.general_unit || '未设置'}}</text>
+          <text class="meta-item">负责人：{{item.manager_name || '未指定'}}</text>
+          <text class="meta-item" wx:if="{{item.manager_phone}}">联系电话：{{item.manager_phone}}</text>
+        </view>
+        <view class="project-time">
+          <text>创建时间：{{item.created_at}}</text>
+        </view>
+      </view>
+      
+      <view class="project-actions">
+        <text class="status-badge {{item.status === 1 ? 'active' : 'inactive'}}">
+          {{item.status === 1 ? '启用' : '禁用'}}
+        </text>
+        <button size="mini" type="default" bindtap="showEditProject" data-project="{{item}}">编辑</button>
+        <button size="mini" type="{{item.status === 1 ? 'warn' : 'primary'}}" bindtap="toggleStatus" data-id="{{item.id}}" data-status="{{item.status}}">
+          {{item.status === 1 ? '禁用' : '启用'}}
+        </button>
+        <button size="mini" type="warn" bindtap="deleteProject" data-id="{{item.id}}" data-name="{{item.project_name}}">删除</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分页 -->
+  <view class="pagination" wx:if="{{total > pageSize}}">
+    <button size="mini" bindtap="onPageChange" data-type="prev" disabled="{{page === 1}}">上一页</button>
+    <text class="page-info">第 {{page}} 页 / 共 {{Math.ceil(total/pageSize)}} 页</text>
+    <button size="mini" bindtap="onPageChange" data-type="next" disabled="{{page >= Math.ceil(total/pageSize)}}">下一页</button>
+  </view>
+
+  <!-- 添加项目对话框 -->
+  <view class="dialog-mask" wx:if="{{showAddDialog}}" bindtap="closeDialog"></view>
+  <view class="dialog" wx:if="{{showAddDialog}}">
+    <view class="dialog-header">
+      <text>添加项目</text>
+      <text class="dialog-close" bindtap="closeDialog">×</text>
+    </view>
+    <view class="dialog-body">
+      <view class="form-item">
+        <text class="form-label">项目名称</text>
+        <input class="form-input" placeholder="请输入项目名称" value="{{formData.project_name}}" bindinput="onFormInput" data-field="project_name" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">总体单位</text>
+        <picker bindchange="onCompanyChange" value="{{selectedCompanyIndex}}" range="{{companies}}" range-key="company_name">
+          <view class="form-input picker-value">
+            {{selectedCompanyIndex >= 0 ? companies[selectedCompanyIndex].company_name : '请选择总体单位'}}
+          </view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">项目负责人</text>
+        <picker bindchange="onManagerChange" value="{{selectedManagerIndex}}" range="{{managers}}" range-key="username">
+          <view class="form-input picker-value">
+            {{selectedManagerIndex >= 0 ? managers[selectedManagerIndex].username + ' (' + managers[selectedManagerIndex].phone + ')' : '请选择负责人（可选）'}}
+          </view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">状态</text>
+        <switch checked="{{formData.status === 1}}" bindchange="onStatusSwitch" />
+        <text class="switch-label">{{formData.status === 1 ? '启用' : '禁用'}}</text>
+      </view>
+    </view>
+    <view class="dialog-footer">
+      <button size="mini" bindtap="closeDialog">取消</button>
+      <button size="mini" type="primary" bindtap="submitAdd">确定</button>
+    </view>
+  </view>
+
+  <!-- 编辑项目对话框 -->
+  <view class="dialog-mask" wx:if="{{showEditDialog}}" bindtap="closeDialog"></view>
+  <view class="dialog" wx:if="{{showEditDialog}}">
+    <view class="dialog-header">
+      <text>编辑项目</text>
+      <text class="dialog-close" bindtap="closeDialog">×</text>
+    </view>
+    <view class="dialog-body">
+      <view class="form-item">
+        <text class="form-label">项目名称</text>
+        <input class="form-input" placeholder="请输入项目名称" value="{{formData.project_name}}" bindinput="onFormInput" data-field="project_name" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">总体单位</text>
+        <picker bindchange="onCompanyChange" value="{{selectedCompanyIndex}}" range="{{companies}}" range-key="company_name">
+          <view class="form-input picker-value">
+            {{selectedCompanyIndex >= 0 ? companies[selectedCompanyIndex].company_name : (formData.general_unit || '请选择总体单位')}}
+          </view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">项目负责人</text>
+        <picker bindchange="onManagerChange" value="{{selectedManagerIndex}}" range="{{managers}}" range-key="username">
+          <view class="form-input picker-value">
+            {{selectedManagerIndex >= 0 ? managers[selectedManagerIndex].username + ' (' + managers[selectedManagerIndex].phone + ')' : (formData.manager_name || '请选择负责人（可选）')}}
+          </view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">状态</text>
+        <switch checked="{{formData.status === 1}}" bindchange="onStatusSwitch" />
+        <text class="switch-label">{{formData.status === 1 ? '启用' : '禁用'}}</text>
+      </view>
+    </view>
+    <view class="dialog-footer">
+      <button size="mini" bindtap="closeDialog">取消</button>
+      <button size="mini" type="primary" bindtap="submitEdit">确定</button>
+    </view>
+  </view>
+</view>
