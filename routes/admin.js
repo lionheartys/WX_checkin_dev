@@ -272,158 +272,6 @@ router.post('/audit-makeup', async (req, res) => {
   }
 });
 
-// // 7. 获取打卡地点列表
-// router.get('/checkin-locations', async (req, res) => {
-//   try {
-//     const { company_id } = req.user;
-//     const query = `
-//       SELECT cl.*, p.project_name, p.general_unit
-//       FROM checkin_locations cl
-//       INNER JOIN projects p ON cl.project_id = p.id
-//       INNER JOIN users u ON p.manager_id = u.id
-//       WHERE u.company_id = ?
-//       ORDER BY p.project_name, cl.location_name
-//     `;
-    
-//     const [locations] = await pool.query(query, [company_id]);
-//     res.json({ 
-//       code: 200,
-//       message: '获取成功',
-//       data: locations 
-//     });
-//   } catch (error) {
-//     console.error('获取打卡地点失败:', error);
-//     res.status(500).json({ 
-//       code: 500,
-//       message: '获取打卡地点失败',
-//       data: null 
-//     });
-//   }
-// });
-
-// // 8. 创建打卡地点
-// router.post('/checkin-location', async (req, res) => {
-//   try {
-//     const {
-//       project_id,
-//       location_name,
-//       longitude,
-//       latitude,
-//       work_start_time,
-//       work_end_time,
-//       checkin_range,
-//       abnormal_threshold
-//     } = req.body;
-    
-//     const admin_id = req.user.id;
-    
-//     const [result] = await pool.query(
-//       `INSERT INTO checkin_locations 
-//        (project_id, location_name, longitude, latitude, work_start_time, 
-//         work_end_time, checkin_range, abnormal_threshold)
-//        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-//       [project_id, location_name, longitude, latitude, work_start_time,
-//        work_end_time, checkin_range || 200, abnormal_threshold || 30]
-//     );
-    
-//     // 记录操作日志
-//     await pool.query(
-//       `INSERT INTO operation_logs (user_id, operation_type, target_type, target_id, operation_detail)
-//        VALUES (?, 'create_location', 'checkin_location', ?, ?)`,
-//       [admin_id, result.insertId, JSON.stringify(req.body)]
-//     );
-    
-//     res.json({ 
-//       code: 200,
-//       message: '创建成功',
-//       data: { id: result.insertId }
-//     });
-//   } catch (error) {
-//     console.error('创建打卡地点失败:', error);
-//     res.status(500).json({ 
-//       code: 500,
-//       message: '创建打卡地点失败',
-//       data: null 
-//     });
-//   }
-// });
-
-// // 9. 更新打卡地点
-// router.put('/checkin-location/:id', async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const {
-//       location_name,
-//       longitude,
-//       latitude,
-//       work_start_time,
-//       work_end_time,
-//       checkin_range,
-//       abnormal_threshold,
-//       status
-//     } = req.body;
-    
-//     const admin_id = req.user.id;
-    
-//     await pool.query(
-//       `UPDATE checkin_locations 
-//        SET location_name = ?, longitude = ?, latitude = ?, 
-//            work_start_time = ?, work_end_time = ?, 
-//            checkin_range = ?, abnormal_threshold = ?, status = ?
-//        WHERE id = ?`,
-//       [location_name, longitude, latitude, work_start_time, work_end_time,
-//        checkin_range, abnormal_threshold, status, id]
-//     );
-    
-//     // 记录操作日志
-//     await pool.query(
-//       `INSERT INTO operation_logs (user_id, operation_type, target_type, target_id, operation_detail)
-//        VALUES (?, 'update_location', 'checkin_location', ?, ?)`,
-//       [admin_id, id, JSON.stringify(req.body)]
-//     );
-    
-//     res.json({ 
-//       code: 200,
-//       message: '更新成功',
-//       data: null 
-//     });
-//   } catch (error) {
-//     console.error('更新打卡地点失败:', error);
-//     res.status(500).json({ 
-//       code: 500,
-//       message: '更新打卡地点失败',
-//       data: null 
-//     });
-//   }
-// });
-
-// // 10. 获取项目列表
-// router.get('/projects', async (req, res) => {
-//   try {
-//     const { company_id } = req.user;
-//     const query = `
-//       SELECT p.*, u.username as manager_name
-//       FROM projects p
-//       LEFT JOIN users u ON p.manager_id = u.id
-//       WHERE u.company_id = ?
-//       ORDER BY p.project_name
-//     `;
-    
-//     const [projects] = await pool.query(query, [company_id]);
-//     res.json({ 
-//       code: 200,
-//       message: '获取成功',
-//       data: projects 
-//     });
-//   } catch (error) {
-//     console.error('获取项目列表失败:', error);
-//     res.status(500).json({ 
-//       code: 500,
-//       message: '获取项目列表失败',
-//       data: null 
-//     });
-//   }
-// });
 
 // 11. 获取统计数据
 router.get('/statistics', async (req, res) => {
@@ -950,29 +798,658 @@ router.get('/projects', async (req, res) => {
   }
 });
 
-// // 23. 获取项目列表（用于选择）
-// router.get('/projects', async (req, res) => {
-//   try {
-//     console.log('获取项目列表请求');
-//     const [projects] = await pool.query(
-//       'SELECT id, project_name FROM projects WHERE status = 1'
-//     );
+// 24. 获取公司列表
+router.get('/companies', async (req, res) => {
+  try {
+    const { page = 1, pageSize = 10, status, keyword } = req.query;
+    const offset = (page - 1) * pageSize;
     
-//     console.log('查询到的项目:', projects);
+    let whereClause = '1 = 1';
+    const params = [];
     
-//     res.json({
-//       code: 200,
-//       message: '获取成功',
-//       data: projects
-//     });
-//   } catch (error) {
-//     console.error('获取项目列表失败:', error);
-//     res.status(500).json({
-//       code: 500,
-//       message: '获取失败',
-//       data: []
-//     });
-//   }
-// });
+    // 状态筛选
+    if (status !== undefined && status !== '') {
+      whereClause += ' AND status = ?';
+      params.push(status);
+    }
+    
+    // 关键词搜索
+    if (keyword) {
+      whereClause += ' AND company_name LIKE ?';
+      params.push(`%${keyword}%`);
+    }
+    
+    // 获取总数
+    const [countResult] = await pool.query(
+      `SELECT COUNT(*) as total FROM companies WHERE ${whereClause}`,
+      params
+    );
+    
+    // 获取列表
+    const [companies] = await pool.query(
+      `SELECT id, company_name, valid_until, status, created_at, updated_at,
+        CASE 
+          WHEN valid_until < CURDATE() THEN 'expired'
+          WHEN valid_until <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN 'expiring'
+          ELSE 'valid'
+        END as validity_status
+       FROM companies 
+       WHERE ${whereClause}
+       ORDER BY created_at DESC
+       LIMIT ? OFFSET ?`,
+      [...params, parseInt(pageSize), offset]
+    );
+    
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: {
+        list: companies,
+        total: countResult[0].total,
+        page: parseInt(page),
+        pageSize: parseInt(pageSize)
+      }
+    });
+  } catch (error) {
+    console.error('获取公司列表失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '获取失败',
+      data: null
+    });
+  }
+});
+
+// 25. 添加公司
+router.post('/company', async (req, res) => {
+  try {
+    const { company_name, valid_until, status = 1 } = req.body;
+    
+    // 检查公司名称是否已存在
+    const [existing] = await pool.query(
+      'SELECT id FROM companies WHERE company_name = ?',
+      [company_name]
+    );
+    
+    if (existing.length > 0) {
+      return res.status(400).json({
+        code: 400,
+        message: '公司名称已存在',
+        data: null
+      });
+    }
+    
+    const [result] = await pool.query(
+      'INSERT INTO companies (company_name, valid_until, status) VALUES (?, ?, ?)',
+      [company_name, valid_until, status]
+    );
+    
+    res.json({
+      code: 200,
+      message: '添加成功',
+      data: { id: result.insertId }
+    });
+  } catch (error) {
+    console.error('添加公司失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '添加失败',
+      data: null
+    });
+  }
+});
+
+// 26. 更新公司信息
+router.put('/company/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { company_name, valid_until, status } = req.body;
+    
+    // 检查公司是否存在
+    const [company] = await pool.query(
+      'SELECT id FROM companies WHERE id = ?',
+      [id]
+    );
+    
+    if (company.length === 0) {
+      return res.status(404).json({
+        code: 404,
+        message: '公司不存在',
+        data: null
+      });
+    }
+    
+    // 检查新名称是否与其他公司重复
+    const [existing] = await pool.query(
+      'SELECT id FROM companies WHERE company_name = ? AND id != ?',
+      [company_name, id]
+    );
+    
+    if (existing.length > 0) {
+      return res.status(400).json({
+        code: 400,
+        message: '公司名称已存在',
+        data: null
+      });
+    }
+    
+    await pool.query(
+      'UPDATE companies SET company_name = ?, valid_until = ?, status = ? WHERE id = ?',
+      [company_name, valid_until, status, id]
+    );
+    
+    res.json({
+      code: 200,
+      message: '更新成功',
+      data: null
+    });
+  } catch (error) {
+    console.error('更新公司失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '更新失败',
+      data: null
+    });
+  }
+});
+
+// 27. 启用/禁用公司
+router.put('/company/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    // 检查公司是否存在
+    const [company] = await pool.query(
+      'SELECT id, company_name FROM companies WHERE id = ?',
+      [id]
+    );
+    
+    if (company.length === 0) {
+      return res.status(404).json({
+        code: 404,
+        message: '公司不存在',
+        data: null
+      });
+    }
+    
+    await pool.query(
+      'UPDATE companies SET status = ? WHERE id = ?',
+      [status, id]
+    );
+    
+    res.json({
+      code: 200,
+      message: status === 1 ? '启用成功' : '禁用成功',
+      data: null
+    });
+  } catch (error) {
+    console.error('更新公司状态失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '操作失败',
+      data: null
+    });
+  }
+});
+
+// 28. 删除公司
+router.delete('/company/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // 检查公司是否存在
+    const [company] = await pool.query(
+      'SELECT id, company_name FROM companies WHERE id = ?',
+      [id]
+    );
+    
+    if (company.length === 0) {
+      return res.status(404).json({
+        code: 404,
+        message: '公司不存在',
+        data: null
+      });
+    }
+    
+    // 检查是否有关联数据（如果有用户表关联的话）
+    // const [users] = await pool.query(
+    //   'SELECT COUNT(*) as count FROM users WHERE company_id = ?',
+    //   [id]
+    // );
+    // 
+    // if (users[0].count > 0) {
+    //   return res.status(400).json({
+    //     code: 400,
+    //     message: '该公司下还有用户，无法删除',
+    //     data: null
+    //   });
+    // }
+    
+    await pool.query('DELETE FROM companies WHERE id = ?', [id]);
+    
+    res.json({
+      code: 200,
+      message: '删除成功',
+      data: null
+    });
+  } catch (error) {
+    console.error('删除公司失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '删除失败',
+      data: null
+    });
+  }
+});
+
+// 29. 获取单个公司详情
+router.get('/company/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const [company] = await pool.query(
+      `SELECT id, company_name, valid_until, status, created_at, updated_at,
+        CASE 
+          WHEN valid_until < CURDATE() THEN 'expired'
+          WHEN valid_until <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN 'expiring'
+          ELSE 'valid'
+        END as validity_status
+       FROM companies WHERE id = ?`,
+      [id]
+    );
+    
+    if (company.length === 0) {
+      return res.status(404).json({
+        code: 404,
+        message: '公司不存在',
+        data: null
+      });
+    }
+    
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: company[0]
+    });
+  } catch (error) {
+    console.error('获取公司详情失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '获取失败',
+      data: null
+    });
+  }
+});
+
+// 30. 批量更新公司有效期
+router.put('/companies/batch-update-validity', async (req, res) => {
+  try {
+    const { company_ids, valid_until } = req.body;
+    
+    if (!company_ids || company_ids.length === 0) {
+      return res.status(400).json({
+        code: 400,
+        message: '请选择要更新的公司',
+        data: null
+      });
+    }
+    
+    await pool.query(
+      'UPDATE companies SET valid_until = ? WHERE id IN (?)',
+      [valid_until, company_ids]
+    );
+    
+    res.json({
+      code: 200,
+      message: '批量更新成功',
+      data: null
+    });
+  } catch (error) {
+    console.error('批量更新公司有效期失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '批量更新失败',
+      data: null
+    });
+  }
+});
+
+
+// 31. 获取项目管理列表（带分页、搜索、筛选）
+router.get('/projects-manage', async (req, res) => {
+  try {
+    const { page = 1, pageSize = 10, status, keyword } = req.query;
+    const offset = (page - 1) * pageSize;
+    
+    let whereClause = '1 = 1';
+    const params = [];
+    
+    // 状态筛选
+    if (status !== undefined && status !== '') {
+      whereClause += ' AND p.status = ?';
+      params.push(status);
+    }
+    
+    // 关键词搜索（项目名称或总体单位）
+    if (keyword) {
+      whereClause += ' AND (p.project_name LIKE ? OR p.general_unit LIKE ?)';
+      params.push(`%${keyword}%`, `%${keyword}%`);
+    }
+    
+    // 获取总数
+    const [countResult] = await pool.query(
+      `SELECT COUNT(*) as total FROM projects p WHERE ${whereClause}`,
+      params
+    );
+    
+    // 获取列表（包含管理员信息）
+    const [projects] = await pool.query(
+      `SELECT p.*, u.username as manager_username, u.phone as manager_phone
+       FROM projects p
+       LEFT JOIN users u ON p.manager_id = u.id
+       WHERE ${whereClause}
+       ORDER BY p.created_at DESC
+       LIMIT ? OFFSET ?`,
+      [...params, parseInt(pageSize), offset]
+    );
+    
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: {
+        list: projects,
+        total: countResult[0].total,
+        page: parseInt(page),
+        pageSize: parseInt(pageSize)
+      }
+    });
+  } catch (error) {
+    console.error('获取项目列表失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '获取失败',
+      data: null
+    });
+  }
+});
+
+// 32. 添加项目
+router.post('/project', async (req, res) => {
+  try {
+    const { project_name, general_unit, manager_id, manager_name, status = 1 } = req.body;
+    
+    // 检查项目名称是否已存在
+    const [existing] = await pool.query(
+      'SELECT id FROM projects WHERE project_name = ?',
+      [project_name]
+    );
+    
+    if (existing.length > 0) {
+      return res.status(400).json({
+        code: 400,
+        message: '项目名称已存在',
+        data: null
+      });
+    }
+    
+    // 如果提供了manager_id，获取对应的用户姓名
+    let finalManagerName = manager_name;
+    if (manager_id) {
+      const [user] = await pool.query(
+        'SELECT username FROM users WHERE id = ?',
+        [manager_id]
+      );
+      if (user.length > 0) {
+        finalManagerName = user[0].username;
+      }
+    }
+    
+    const [result] = await pool.query(
+      'INSERT INTO projects (project_name, general_unit, manager_id, manager_name, status) VALUES (?, ?, ?, ?, ?)',
+      [project_name, general_unit, manager_id || null, finalManagerName, status]
+    );
+    
+    res.json({
+      code: 200,
+      message: '添加成功',
+      data: { id: result.insertId }
+    });
+  } catch (error) {
+    console.error('添加项目失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '添加失败',
+      data: null
+    });
+  }
+});
+
+// 33. 更新项目信息
+router.put('/project/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { project_name, general_unit, manager_id, manager_name, status } = req.body;
+    
+    // 检查项目是否存在
+    const [project] = await pool.query(
+      'SELECT id FROM projects WHERE id = ?',
+      [id]
+    );
+    
+    if (project.length === 0) {
+      return res.status(404).json({
+        code: 404,
+        message: '项目不存在',
+        data: null
+      });
+    }
+    
+    // 检查新名称是否与其他项目重复
+    const [existing] = await pool.query(
+      'SELECT id FROM projects WHERE project_name = ? AND id != ?',
+      [project_name, id]
+    );
+    
+    if (existing.length > 0) {
+      return res.status(400).json({
+        code: 400,
+        message: '项目名称已存在',
+        data: null
+      });
+    }
+    
+    // 如果提供了manager_id，获取对应的用户姓名
+    let finalManagerName = manager_name;
+    if (manager_id) {
+      const [user] = await pool.query(
+        'SELECT username FROM users WHERE id = ?',
+        [manager_id]
+      );
+      if (user.length > 0) {
+        finalManagerName = user[0].username;
+      }
+    }
+    
+    await pool.query(
+      'UPDATE projects SET project_name = ?, general_unit = ?, manager_id = ?, manager_name = ?, status = ? WHERE id = ?',
+      [project_name, general_unit, manager_id || null, finalManagerName, status, id]
+    );
+    
+    res.json({
+      code: 200,
+      message: '更新成功',
+      data: null
+    });
+  } catch (error) {
+    console.error('更新项目失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '更新失败',
+      data: null
+    });
+  }
+});
+
+// 34. 启用/禁用项目
+router.put('/project/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    // 检查项目是否存在
+    const [project] = await pool.query(
+      'SELECT id, project_name FROM projects WHERE id = ?',
+      [id]
+    );
+    
+    if (project.length === 0) {
+      return res.status(404).json({
+        code: 404,
+        message: '项目不存在',
+        data: null
+      });
+    }
+    
+    await pool.query(
+      'UPDATE projects SET status = ? WHERE id = ?',
+      [status, id]
+    );
+    
+    res.json({
+      code: 200,
+      message: status === 1 ? '启用成功' : '禁用成功',
+      data: null
+    });
+  } catch (error) {
+    console.error('更新项目状态失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '操作失败',
+      data: null
+    });
+  }
+});
+
+// 35. 删除项目
+router.delete('/project/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // 检查项目是否存在
+    const [project] = await pool.query(
+      'SELECT id, project_name FROM projects WHERE id = ?',
+      [id]
+    );
+    
+    if (project.length === 0) {
+      return res.status(404).json({
+        code: 404,
+        message: '项目不存在',
+        data: null
+      });
+    }
+    
+    // 检查是否有关联数据（例如打卡记录）
+    // 如果有其他表引用此项目，需要检查
+    
+    await pool.query('DELETE FROM projects WHERE id = ?', [id]);
+    
+    res.json({
+      code: 200,
+      message: '删除成功',
+      data: null
+    });
+  } catch (error) {
+    console.error('删除项目失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '删除失败',
+      data: null
+    });
+  }
+});
+
+// 36. 获取单个项目详情（修正版）
+router.get('/project/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const [project] = await pool.query(
+      `SELECT p.*, u.username as manager_username, u.phone as manager_phone
+       FROM projects p
+       LEFT JOIN users u ON p.manager_id = u.id
+       WHERE p.id = ?`,
+      [id]
+    );
+    
+    if (project.length === 0) {
+      return res.status(404).json({
+        code: 404,
+        message: '项目不存在',
+        data: null
+      });
+    }
+    
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: project[0]
+    });
+  } catch (error) {
+    console.error('获取项目详情失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '获取失败',
+      data: null
+    });
+  }
+});
+
+// 37. 获取可用的项目负责人列表（修正版）
+router.get('/available-managers', async (req, res) => {
+  try {
+    // 只获取已审核通过的用户作为可选的项目负责人
+    const [users] = await pool.query(
+      'SELECT id, username, phone FROM users WHERE status = "approved" ORDER BY username'
+    );
+    
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: users
+    });
+  } catch (error) {
+    console.error('获取可用负责人列表失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '获取失败',
+      data: null
+    });
+  }
+});
+
+// 38. 获取所有启用的公司列表（用于项目选择总体单位）
+router.get('/companies-select', async (req, res) => {
+  try {
+    const [companies] = await pool.query(
+      'SELECT id, company_name FROM companies WHERE status = 1 ORDER BY company_name'
+    );
+    
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: companies
+    });
+  } catch (error) {
+    console.error('获取公司列表失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '获取失败',
+      data: null
+    });
+  }
+});
+
 
 module.exports = router;
