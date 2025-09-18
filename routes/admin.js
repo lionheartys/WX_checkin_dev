@@ -569,43 +569,7 @@ router.post('/batch-audit-leave', async (req, res) => {
 });
 
 
-// // 18. 获取打卡地列表
-// router.get('/checkin-locations', async (req, res) => {
-//   try {
-//     const { status } = req.query;
-    
-//     let query = `
-//       SELECT cl.*, p.project_name 
-//       FROM checkin_locations cl
-//       LEFT JOIN projects p ON cl.project_id = p.id
-//       WHERE 1=1
-//     `;
-    
-//     const params = [];
-    
-//     if (status !== undefined) {
-//       query += ' AND cl.status = ?';
-//       params.push(status);
-//     }
-    
-//     query += ' ORDER BY cl.created_at DESC';
-    
-//     const [locations] = await pool.query(query, params);
-    
-//     res.json({
-//       code: 200,
-//       message: '获取成功',
-//       data: locations
-//     });
-//   } catch (error) {
-//     console.error('获取打卡地列表失败:', error);
-//     res.status(500).json({
-//       code: 500,
-//       message: '获取失败',
-//       data: null
-//     });
-//   }
-// });
+
 
 // 后端查询打卡地列表
 router.get('/checkin-locations', async (req, res) => {
@@ -1451,5 +1415,204 @@ router.get('/companies-select', async (req, res) => {
   }
 });
 
+// 39. 获取项目入场申请列表
+router.get('/entry-applications', async (req, res) => {
+  try {
+    const { status = 'all' } = req.query;
+    
+    let query = `
+      SELECT 
+        pe.id,
+        pe.user_id,
+        pe.project_id,
+        pe.location_id,
+        pe.entry_type,
+        pe.apply_reason,
+        pe.status,
+        pe.approve_time,
+        pe.approve_remark,
+        pe.expect_leavetime,
+        pe.created_at,
+        u.username,
+        u.phone,
+        p.project_name,
+        cl.location_name,
+        approver.username as approver_name
+      FROM project_entries pe
+      LEFT JOIN users u ON pe.user_id = u.id
+      LEFT JOIN projects p ON pe.project_id = p.id
+      LEFT JOIN checkin_locations cl ON pe.location_id = cl.id
+      LEFT JOIN users approver ON pe.approver_id = approver.id
+      WHERE 1=1
+    `;
+    
+    const params = [];
+    
+    if (status !== 'all') {
+      query += ' AND pe.status = ?';
+      params.push(status);
+    }
+    
+    query += ' ORDER BY pe.user_id, pe.project_id, pe.created_at DESC';
+    
+    const [applications] = await pool.query(query, params);
+    
+    // 按用户和项目分组
+    const groupedData = {};
+    applications.forEach(app => {
+      if (!groupedData[app.user_id]) {
+        groupedData[app.user_id] = {
+          user_id: app.user_id,
+          username: app.username,
+          phone: app.phone,
+          projects: {}
+        };
+      }
+      
+      if (!groupedData[app.user_id].projects[app.project_id]) {
+        groupedData[app.user_id].projects[app.project_id] = {
+          project_id: app.project_id,
+          project_name: app.project_name,
+          applications: []
+        };
+      }
+      
+      groupedData[app.user_id].projects[app.project_id].applications.push({
+        id: app.id,
+        location_id: app.location_id,
+        location_name: app.location_name,
+        entry_type: app.entry_type,
+        apply_reason: app.apply_reason,
+        status: app.status,
+        approve_time: app.approve_time,
+        approve_remark: app.approve_remark,
+        approver_name: app.approver_name,
+        expect_leavetime: app.expect_leavetime,
+        created_at: app.created_at
+      });
+    });
+    
+    // 转换为数组格式
+    const result = Object.values(groupedData).map(user => ({
+      ...user,
+      projects: Object.values(user.projects)
+    }));
+    
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: result
+    });
+  } catch (error) {
+    console.error('获取项目入场申请列表失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '获取失败',
+      data: null
+    });
+  }
+});
+
+// 40. 审批项目入场申请
+router.post('/entry-applications/:id/approve', async (req, res) => {
+  const connection = await pool.getConnection();
+  
+  try {
+    const { id } = req.params;
+    const { status, approve_remark } = req.body;
+    const approver_id = req.user.id;
+    
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({
+        code: 400,
+        message: '无效的审批状态'
+      });
+    }
+    
+    await connection.beginTransaction();
+    
+    // 检查申请是否存在且待审批
+    const [applications] = await connection.query(
+      'SELECT * FROM project_entries WHERE id = ? AND status = "pending"',
+      [id]
+    );
+    
+    if (applications.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({
+        code: 404,
+        message: '申请不存在或已处理'
+      });
+    }
+    
+    // 更新审批状态
+    await connection.query(
+      `UPDATE project_entries 
+       SET status = ?, 
+           approver_id = ?, 
+           approve_time = NOW(), 
+           approve_remark = ?
+       WHERE id = ?`,
+      [status, approver_id, approve_remark, id]
+    );
+    
+    // 记录操作日志
+    await connection.query(
+      `INSERT INTO operation_logs (user_id, operation_type, target_type, target_id, operation_detail)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        approver_id,
+        status === 'approved' ? 'APPROVE_ENTRY' : 'REJECT_ENTRY',
+        'PROJECT_ENTRY',
+        id,
+        JSON.stringify({ status, approve_remark })
+      ]
+    );
+    
+    await connection.commit();
+    
+    res.json({
+      code: 200,
+      message: `${status === 'approved' ? '批准' : '拒绝'}成功`
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error('审批项目入场申请失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '审批失败',
+      error: error.message
+    });
+  } finally {
+    connection.release();
+  }
+});
+
+// 41. 获取项目入场申请统计
+router.get('/entry-applications/statistics', async (req, res) => {
+  try {
+    const [stats] = await pool.query(`
+      SELECT 
+        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_count,
+        COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved_count,
+        COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected_count,
+        COUNT(*) as total_count
+      FROM project_entries
+    `);
+    
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: stats[0]
+    });
+  } catch (error) {
+    console.error('获取项目入场申请统计失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '获取失败',
+      data: null
+    });
+  }
+});
 
 module.exports = router;

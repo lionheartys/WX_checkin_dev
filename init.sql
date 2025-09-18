@@ -76,12 +76,13 @@ CREATE TABLE project_entries (
     location_id INT NOT NULL COMMENT '打卡地ID',
     entry_type ENUM('entry', 'exit') NOT NULL COMMENT '申请类型: entry-入场, exit-离场',
     apply_reason TEXT COMMENT '申请原因',
-    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending' COMMENT '审批状态',
+    status ENUM('pending', 'approved', 'rejected', 'expired') DEFAULT 'pending' COMMENT '审批状态：pending - 待审批, approved - 已批准, rejected - 已拒绝, expired - 已过期',
     approver_id INT COMMENT '审批人ID',
     approve_time DATETIME COMMENT '审批时间',
     approve_remark TEXT COMMENT '审批备注',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    expect_leavetime DATETIME COMMENT '预计离场时间',
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
     FOREIGN KEY (location_id) REFERENCES checkin_locations(id) ON DELETE CASCADE,
@@ -92,6 +93,7 @@ CREATE TABLE project_entries (
     INDEX idx_location (location_id),
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='项目入场申请表';
+
 
 -- 6. 打卡记录表
 CREATE TABLE checkin_records (
