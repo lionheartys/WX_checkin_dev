@@ -82,6 +82,14 @@
         <view class="module-icon">📁</view>
         <view class="module-name">项目管理</view>
     </view>
+
+    <view class="module-card" bindtap="goToEntryApproval">
+        <view class="module-icon">🎫</view>
+        <view class="module-name">入场审批</view>
+        <view class="module-badge" wx:if="{{statistics.pendingEntries > 0}}" style="background-color: #ff5722;">
+            {{statistics.pendingEntries}}
+        </view>
+    </view>
     
     <view class="module-card" bindtap="goToStatistics">
       <view class="module-icon">📈</view>

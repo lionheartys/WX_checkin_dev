@@ -1,0 +1,353 @@
+.container {
+    padding: 20rpx;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+  }
+  
+  /* 统计卡片 */
+  .statistics-card {
+    background: white;
+    border-radius: 16rpx;
+    padding: 30rpx;
+    margin-bottom: 20rpx;
+    display: flex;
+    justify-content: space-around;
+    box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+  }
+  
+  .stat-item {
+    text-align: center;
+  }
+  
+  .stat-value {
+    font-size: 36rpx;
+    font-weight: bold;
+    margin-bottom: 10rpx;
+  }
+  
+  .stat-label {
+    font-size: 24rpx;
+    color: #666;
+  }
+  
+  /* 筛选栏 */
+  .filter-bar {
+    background: white;
+    border-radius: 12rpx;
+    padding: 20rpx;
+    margin-bottom: 20rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  }
+  
+  .filter-selector {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10rpx;
+  }
+  
+  .filter-selector text:first-child {
+    font-size: 28rpx;
+    color: #333;
+  }
+  
+  .arrow {
+    color: #999;
+    font-size: 20rpx;
+  }
+  
+  /* 申请列表 */
+  .applications-list {
+    background: white;
+    border-radius: 16rpx;
+    overflow: hidden;
+    box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  }
+  
+  /* 用户分组 */
+  .user-group {
+    border-bottom: 1rpx solid #f0f0f0;
+  }
+  
+  .user-group:last-child {
+    border-bottom: none;
+  }
+  
+  .user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25rpx;
+    background: #fafafa;
+    border-left: 4rpx solid #2196f3;
+  }
+  
+  .user-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .user-name {
+    font-size: 30rpx;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8rpx;
+  }
+  
+  .user-phone {
+    font-size: 24rpx;
+    color: #999;
+  }
+  
+  .expand-icon {
+    font-size: 24rpx;
+    color: #666;
+  }
+  
+  /* 项目分组 */
+  .projects-list {
+    padding-left: 20rpx;
+    background: white;
+  }
+  
+  .project-group {
+    border-bottom: 1rpx solid #f5f5f5;
+  }
+  
+  .project-group:last-child {
+    border-bottom: none;
+  }
+  
+  .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20rpx;
+    background: #f9f9f9;
+    border-left: 3rpx solid #4caf50;
+  }
+  
+  .project-name {
+    font-size: 28rpx;
+    color: #333;
+  }
+  
+  /* 申请项目 */
+  .applications-items {
+    padding: 20rpx;
+  }
+  
+  .application-card {
+    background: white;
+    border: 1rpx solid #e8e8e8;
+    border-radius: 12rpx;
+    padding: 20rpx;
+    margin-bottom: 20rpx;
+  }
+  
+  .application-card:last-child {
+    margin-bottom: 0;
+  }
+  
+  .app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20rpx;
+    padding-bottom: 15rpx;
+    border-bottom: 1rpx solid #f0f0f0;
+  }
+  
+  .app-location {
+    display: flex;
+    align-items: center;
+  }
+  
+  .location-icon {
+    font-size: 24rpx;
+    margin-right: 8rpx;
+  }
+  
+  .location-name {
+    font-size: 28rpx;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .app-status {
+    font-size: 24rpx;
+    font-weight: bold;
+    padding: 6rpx 16rpx;
+    border-radius: 20rpx;
+    background: rgba(0, 0, 0, 0.05);
+  }
+  
+  .app-info {
+    margin-bottom: 20rpx;
+  }
+  
+  .info-row {
+    display: flex;
+    margin-bottom: 12rpx;
+    font-size: 26rpx;
+  }
+  
+  .info-row:last-child {
+    margin-bottom: 0;
+  }
+  
+  .info-label {
+    color: #999;
+    min-width: 140rpx;
+  }
+  
+  .info-value {
+    color: #333;
+    flex: 1;
+  }
+  
+  .entry-type {
+    color: #4caf50;
+    font-weight: 500;
+  }
+  
+  .exit-type {
+    color: #ff9800;
+    font-weight: 500;
+  }
+  
+  /* 操作按钮 */
+  .action-buttons {
+    display: flex;
+    gap: 20rpx;
+    margin-top: 20rpx;
+    padding-top: 20rpx;
+    border-top: 1rpx solid #f0f0f0;
+  }
+  
+  .btn-approve,
+  .btn-reject {
+    flex: 1;
+    height: 64rpx;
+    font-size: 26rpx;
+    border-radius: 8rpx;
+    border: none;
+    font-weight: 500;
+  }
+  
+  .btn-approve {
+    background: #4caf50;
+    color: white;
+  }
+  
+  .btn-reject {
+    background: #f44336;
+    color: white;
+  }
+  
+  /* 空状态 */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 100rpx 0;
+    background: white;
+    border-radius: 16rpx;
+  }
+  
+  .empty-icon {
+    font-size: 80rpx;
+    margin-bottom: 20rpx;
+  }
+  
+  .empty-text {
+    color: #999;
+    font-size: 28rpx;
+  }
+  
+  /* 对话框 */
+  .dialog-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+  
+  .dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    background: white;
+    border-radius: 16rpx;
+    z-index: 1000;
+    overflow: hidden;
+  }
+  
+  .dialog-header {
+    padding: 30rpx;
+    font-size: 32rpx;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 1rpx solid #f0f0f0;
+  }
+  
+  .dialog-body {
+    padding: 30rpx;
+  }
+  
+  .dialog-info {
+    display: flex;
+    flex-direction: column;
+    gap: 15rpx;
+    margin-bottom: 30rpx;
+    font-size: 28rpx;
+    color: #666;
+  }
+  
+  .remark-input {
+    width: 100%;
+    height: 120rpx;
+    padding: 20rpx;
+    border: 1rpx solid #e0e0e0;
+    border-radius: 8rpx;
+    font-size: 28rpx;
+    box-sizing: border-box;
+  }
+  
+  .dialog-footer {
+    display: flex;
+    border-top: 1rpx solid #f0f0f0;
+  }
+  
+  .dialog-btn {
+    flex: 1;
+    height: 90rpx;
+    line-height: 90rpx;
+    text-align: center;
+    font-size: 30rpx;
+    border: none;
+    border-radius: 0;
+  }
+  
+  .dialog-btn.cancel {
+    background: #f5f5f5;
+    color: #666;
+  }
+  
+  .dialog-btn.confirm {
+    color: white;
+  }
+  
+  .dialog-btn.approve {
+    background: #4caf50;
+  }
+  
+  .dialog-btn.reject {
+    background: #f44336;
+  }

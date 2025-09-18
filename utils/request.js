@@ -430,6 +430,32 @@ adminGetProjectsManage: (params = {}) => {
       url: '/admin/companies-select',
       method: 'GET'
     })
+  },
+
+  // 获取项目入场申请列表
+  adminGetEntryApplications: (params) => {
+    return request({
+      url: '/admin/entry-applications',
+      method: 'GET',
+      data: params
+    })
+  },
+  
+  // 审批项目入场申请
+  adminApproveEntry: (id, data) => {
+    return request({
+      url: `/admin/entry-applications/${id}/approve`,
+      method: 'POST',
+      data
+    })
+  },
+  
+  // 获取项目入场申请统计
+  adminGetEntryStatistics: () => {
+    return request({
+      url: '/admin/entry-applications/statistics',
+      method: 'GET'
+    })
   }
 }
 // 导出api对象

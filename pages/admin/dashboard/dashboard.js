@@ -147,6 +147,13 @@ Page({
     })
   },
 
+  // 跳转到项目入场审批页面
+  goToEntryApproval() {
+    wx.navigateTo({
+      url: '/pages/admin/entryApproval/entryApproval'
+    })
+  },
+
   // 退出登录
   logout() {
     wx.showModal({

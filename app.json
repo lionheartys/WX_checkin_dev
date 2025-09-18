@@ -16,7 +16,8 @@
       "pages/admin/leaveAudit/leaveAudit",
       "pages/admin/locationManagement/locationManagement",
       "pages/admin/companyManagement/companyManagement",
-      "pages/admin/projectManagement/projectManagement"
+      "pages/admin/projectManagement/projectManagement",
+      "pages/admin/entryApproval/entryApproval"
     ],
     "window": {
       "backgroundTextStyle": "light",
