@@ -3,7 +3,10 @@ const router = express.Router();
 const checkinController = require('../controllers/checkinController');
 const { authMiddleware } = require('../middleware/auth');
 const { body } = require('express-validator');
-const moment = require('moment');
+
+// 修复时区问题 - 使用 moment-timezone
+const moment = require('moment-timezone');
+moment.tz.setDefault('Asia/Shanghai'); // 设置默认时区为中国时间
 
 // 打卡
 router.post('/clock', authMiddleware, [
@@ -62,7 +65,6 @@ router.get('/config', async (req, res) => {
   }
 });
 
-// 改进的简单打卡接口（支持迟到早退判断）
 router.post('/simple-clock', async (req, res) => {
   const pool = require('../config/database');
   const connection = await pool.getConnection();
@@ -91,8 +93,11 @@ router.post('/simple-clock', async (req, res) => {
     const location = locations[0];
     const locationId = location.id;
     
+    // 使用中国时区的当前时间
+    const now = moment().tz('Asia/Shanghai');
+    const today = now.format('YYYY-MM-DD');
+    
     // 检查今日是否已打卡
-    const today = moment().format('YYYY-MM-DD');
     const [todayRecords] = await connection.query(
       `SELECT * FROM checkin_records 
        WHERE user_id = ? AND location_id = ? AND checkin_type = ? 
@@ -110,18 +115,26 @@ router.post('/simple-clock', async (req, res) => {
     }
     
     // 判断打卡状态（迟到、早退、正常）
-    const now = moment();
     const checkinTime = now.format('YYYY-MM-DD HH:mm:ss');
     let checkinStatus = 'normal';
     let abnormalReason = null;
     
+    // 调试日志（可选，正式环境可以删除）
+    console.log('当前北京时间:', now.format('YYYY-MM-DD HH:mm:ss'));
+    console.log('打卡类型:', type);
+    
     if (type === 'in' || !type) {  // 上班打卡
       const workStartTime = location.work_start_time || '09:00:00';
-      const abnormalThreshold = location.abnormal_threshold || 30;
+      const abnormalThreshold = parseInt(location.abnormal_threshold) || 30;
       
-      // 构建今天的上班时间
-      const workStart = moment(now.format('YYYY-MM-DD') + ' ' + workStartTime);
+      // 构建今天的上班时间（使用中国时区）
+      const workStart = moment.tz(`${today} ${workStartTime}`, 'YYYY-MM-DD HH:mm:ss', 'Asia/Shanghai');
       const lateThreshold = workStart.clone().add(abnormalThreshold, 'minutes');
+      
+      // 调试日志
+      console.log('上班时间:', workStart.format('YYYY-MM-DD HH:mm:ss'));
+      console.log('迟到阈值:', lateThreshold.format('YYYY-MM-DD HH:mm:ss'));
+      console.log('是否迟到:', now.isAfter(lateThreshold));
       
       // 判断是否迟到
       if (now.isAfter(lateThreshold)) {
@@ -136,11 +149,16 @@ router.post('/simple-clock', async (req, res) => {
       }
     } else if (type === 'out') {  // 下班打卡
       const workEndTime = location.work_end_time || '18:00:00';
-      const abnormalThreshold = location.abnormal_threshold || 30;
+      const abnormalThreshold = parseInt(location.abnormal_threshold) || 30;
       
-      // 构建今天的下班时间
-      const workEnd = moment(now.format('YYYY-MM-DD') + ' ' + workEndTime);
+      // 构建今天的下班时间（使用中国时区）
+      const workEnd = moment.tz(`${today} ${workEndTime}`, 'YYYY-MM-DD HH:mm:ss', 'Asia/Shanghai');
       const earlyThreshold = workEnd.clone().subtract(abnormalThreshold, 'minutes');
+      
+      // 调试日志
+      console.log('下班时间:', workEnd.format('YYYY-MM-DD HH:mm:ss'));
+      console.log('早退阈值:', earlyThreshold.format('YYYY-MM-DD HH:mm:ss'));
+      console.log('是否早退:', now.isBefore(earlyThreshold));
       
       // 判断是否早退
       if (now.isBefore(earlyThreshold)) {
@@ -154,6 +172,9 @@ router.post('/simple-clock', async (req, res) => {
         }
       }
     }
+    
+    console.log('最终打卡状态:', checkinStatus);
+    console.log('异常原因:', abnormalReason);
     
     // 插入打卡记录
     const [result] = await connection.query(

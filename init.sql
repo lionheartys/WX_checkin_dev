@@ -26,6 +26,7 @@ CREATE TABLE users (
     status ENUM('pending', 'approved', 'rejected', 'disabled') DEFAULT 'pending' COMMENT '用户状态',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    contract_expire_time DATETIME NULL COMMENT '合同到期时间',
     FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL,
     INDEX idx_openid (openid),
     INDEX idx_phone (phone),
