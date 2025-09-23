@@ -1,5 +1,17 @@
 <!--pages/index/index.wxml-->
-<view class="container">
+
+<!-- 加载中状态 -->
+<view wx:if="{{pageStatus === 'loading'}}" class="loading-container">
+  <text>加载中...</text>
+</view>
+
+<!-- 重定向中状态 -->
+<view wx:if="{{pageStatus === 'redirecting'}}" class="loading-container">
+  <text>跳转中...</text>
+</view>
+
+<!-- 员工首页内容 -->
+<view wx:if="{{pageStatus === 'staff'}}" class="container">
   <!-- 顶部背景装饰 -->
   <view class="header-bg"></view>
   
@@ -29,6 +41,7 @@
 
   <!-- 快速操作 -->
   <view class="quick-actions">
+    <!-- 打卡功能暂时注释，根据需求可以取消注释 -->
     <!-- <view class="action-item" catchtap="goToCheckin">
       <view class="action-icon-wrapper checkin">
         <text class="iconfont icon-checkin">📍</text>

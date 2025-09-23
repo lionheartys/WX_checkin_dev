@@ -10,36 +10,68 @@ Page({
       text: '未打卡',
       class: 'none'
     },
-    roleText: ''
+    roleText: '',
+    // 添加页面状态标识
+    pageStatus: 'loading' // loading, staff, redirecting
   },
 
   onLoad() {
-    this.initPage()
+    this.handleRoleBasedRouting()
   },
 
   onShow() {
-    this.checkLoginStatus()
-    this.loadTodayRecords()
+    // 每次显示都检查路由，防止缓存问题
+    this.handleRoleBasedRouting()
   },
 
-  // 初始化页面
-  initPage() {
-    const now = new Date()
-    this.setData({
-      currentDate: util.formatTime(now).split(' ')[0]
-    })
-  },
-
-  // 检查登录状态
-  checkLoginStatus() {
+  // 基于角色的路由处理
+  handleRoleBasedRouting() {
+    console.log('=== 开始角色路由处理 ===')
+    
+    // 检查登录状态
     const userInfo = wx.getStorageSync('userInfo')
-    if (!userInfo) {
+    const token = wx.getStorageSync('token')
+    
+    console.log('用户信息:', userInfo)
+    console.log('Token存在:', !!token)
+
+    // 1. 未登录情况
+    if (!token || !userInfo) {
+      console.log('用户未登录，跳转到登录页')
+      this.setData({ pageStatus: 'redirecting' })
       wx.reLaunch({
         url: '/pages/login/login'
       })
       return
     }
 
+    // 2. 管理员角色跳转
+    if (userInfo.role === 'admin' || userInfo.role === 'project_manager') {
+      console.log('管理员角色，跳转到管理员首页')
+      this.setData({ pageStatus: 'redirecting' })
+      wx.redirectTo({
+        url: '/pages/admin/dashboard/dashboard'
+      })
+      return
+    }
+
+    // 3. 普通员工角色，继续执行页面逻辑
+    console.log('普通员工角色，显示员工首页')
+    this.setData({ 
+      pageStatus: 'staff',
+      userInfo: userInfo 
+    })
+    
+    // 初始化员工首页
+    this.initStaffPage()
+  },
+
+  // 初始化员工页面（原逻辑）
+  initStaffPage() {
+    this.initPage()
+    this.loadTodayRecords()
+    
+    // 设置角色文本
     const roleMap = {
       'admin': '管理员',
       'project_manager': '项目负责人', 
@@ -47,8 +79,15 @@ Page({
     }
 
     this.setData({
-      userInfo,
-      roleText: roleMap[userInfo.role] || '员工'
+      roleText: roleMap[this.data.userInfo.role] || '员工'
+    })
+  },
+
+  // 初始化页面
+  initPage() {
+    const now = new Date()
+    this.setData({
+      currentDate: util.formatTime(now).split(' ')[0]
     })
   },
 
@@ -126,10 +165,18 @@ Page({
     })
   },
 
- // 跳转到请假页面
-goToLeave() {
+  // 跳转到请假页面
+  goToLeave() {
     wx.navigateTo({
       url: '/pages/leave/leave'
+    })
+  },
+
+  // 添加下拉刷新功能
+  onPullDownRefresh() {
+    console.log('下拉刷新')
+    this.loadTodayRecords().finally(() => {
+      wx.stopPullDownRefresh()
     })
   }
 })

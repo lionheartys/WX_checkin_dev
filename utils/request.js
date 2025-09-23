@@ -1,5 +1,5 @@
 // utils/request.js
-const baseURL = 'http://localhost:3000/api'
+const baseURL='http://192.168.15.127:3333/api' //注意不要空格
 
 // 基础请求方法
 const request = (options) => {

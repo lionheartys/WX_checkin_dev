@@ -3,7 +3,7 @@ App({
     globalData: {
       userInfo: null,
       token: '',
-      baseUrl: 'http://192.168.15.127:3000/api'  // 您的后端地址
+      baseUrl:'http://192.168.15.127:3333/api'  // 后端地址注意不要空格
     },
   
     onLaunch() {
