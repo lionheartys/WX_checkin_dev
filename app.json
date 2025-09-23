@@ -7,6 +7,7 @@
       "pages/profile/profile",
       "pages/logs/logs",
       "pages/admin/dashboard/dashboard",
+      "pages/manager/dashboard/dashboard",
       "pages/admin/userAudit/userAudit",
       "pages/admin/checkinRecords/checkinRecords",
       "pages/admin/userManagement/userManagement",
@@ -17,7 +18,8 @@
       "pages/admin/locationManagement/locationManagement",
       "pages/admin/companyManagement/companyManagement",
       "pages/admin/projectManagement/projectManagement",
-      "pages/admin/entryApproval/entryApproval"
+      "pages/manager/projectManagement/projectManagement",
+      "pages/manager/locationManagement/locationManagement"
     ],
     "window": {
       "backgroundTextStyle": "light",

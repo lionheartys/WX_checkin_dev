@@ -456,6 +456,117 @@ adminGetProjectsManage: (params = {}) => {
       url: '/admin/entry-applications/statistics',
       method: 'GET'
     })
+  },
+  /* ---------------- 项目管理员相关 ---------------- */
+
+  // 获取项目列表
+  managerGetProjects(params) {
+    return request({
+      url: '/manager/projects',
+      method: 'GET',
+      data: params
+    })
+  },
+
+  // 添加项目
+  managerAddProject(data) {
+    return request({
+      url: '/manager/project',
+      method: 'POST',
+      data
+    })
+  },
+
+  // 更新项目
+  managerUpdateProject(id, data) {
+    return request({
+      url: `/manager/project/${id}`,
+      method: 'PUT',
+      data
+    })
+  },
+
+  // 更新项目状态
+  managerUpdateProjectStatus(id, status) {
+    return request({
+      url: `/manager/project/${id}`,
+      method: 'PUT',
+      data: { status }
+    })
+  },
+
+  // 删除项目
+  managerDeleteProject(id) {
+    return request({
+      url: `/manager/project/${id}`,
+      method: 'DELETE'
+    })
+  },
+
+  // 获取打卡地列表
+  managerGetLocations(projectId) {
+    return request({
+      url: `/manager/project/${projectId}/checkin-locations`,
+      method: 'GET'
+    })
+  },
+
+  // 添加打卡地
+  managerAddLocation(projectId, data) {
+    return request({
+      url: `/manager/project/${projectId}/checkin-location`,
+      method: 'POST',
+      data
+    })
+  },
+
+  // 更新打卡地
+  managerUpdateLocation(id, data) {
+    return request({
+      url: `/manager/checkin-location/${id}`,
+      method: 'PUT',
+      data
+    })
+  },
+
+  // 删除打卡地
+  managerDeleteLocation(id) {
+    return request({
+      url: `/manager/checkin-location/${id}`,
+      method: 'DELETE'
+    })
+  },
+
+  // 获取统计数据
+  managerGetStatistics() {
+    return request({
+      url: '/manager/statistics',
+      method: 'GET'
+    })
+  },
+
+  // 获取补卡申请
+  managerGetMakeupApplications(status) {
+    return request({
+      url: `/manager/makeup-applications?status=${status}`,
+      method: 'GET'
+    })
+  },
+
+  // 获取请假申请
+  managerGetLeaveApplications(status) {
+    return request({
+      url: `/manager/leave-applications?status=${status}`,
+      method: 'GET'
+    })
+  },
+
+  // 获取入场申请
+  managerGetEntryApplications(status) {
+    return request({
+      url: `/manager/entry-applications?status=${status}`,
+      method: 'GET'
+    })
   }
 }
 // 导出api对象

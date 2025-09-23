@@ -46,11 +46,19 @@ Page({
     }
 
     // 2. 管理员角色跳转
-    if (userInfo.role === 'admin' || userInfo.role === 'project_manager') {
+    if (userInfo.role === 'admin') {
       console.log('管理员角色，跳转到管理员首页')
       this.setData({ pageStatus: 'redirecting' })
       wx.redirectTo({
         url: '/pages/admin/dashboard/dashboard'
+      })
+      return
+    }
+    if (userInfo.role === 'project_manager') {
+      console.log('项目管理员角色，跳转到项目管理员首页')
+      this.setData({ pageStatus: 'redirecting' })
+      wx.redirectTo({
+        url: '/pages/manager/dashboard/dashboard'
       })
       return
     }

@@ -25,6 +25,10 @@ Page({
       wx.reLaunch({
         url: '/pages/admin/dashboard/dashboard'
       })
+    }else if (role === 'project_manager') {
+      wx.reLaunch({
+        url: '/pages/manager/dashboard/dashboard'
+      })
     } else {
       wx.reLaunch({
         url: '/pages/index/index'
@@ -183,34 +187,22 @@ Page({
     this.setData({ loading: true })
 
     try {
-          const loginRes = await new Promise((resolve, reject) => {
-            wx.login({
-              success: resolve,
-              fail: reject
-            })
+        const res = await api.register({
+          username,
+          phone,
+          password,
+          confirmPassword,
+          company_id: 1,
+          openid: `test_${Date.now()}`
+        })
+        
+        if (res.code === 200) {
+          wx.showToast({
+            title: '注册成功，请等待审核', // 改进提示
+            icon: 'success',
+            duration: 2000
           })
           
-          if (!loginRes.code) {
-            throw new Error('微信登录失败')
-          }
-          
-          // 2. 使用 code 进行注册
-          const res = await api.register({
-            username,
-            phone,
-            password,
-            confirmPassword,
-            company_id: 1,
-            code: loginRes.code  // 传递 code 而不是 openid
-          })
-          
-          if (res.code === 200) {
-            wx.showToast({
-              title: '注册成功，请等待审核', // 改进提示
-              icon: 'success',
-              duration: 2000
-            })
-
           // 注册成功后切换到登录模式
           setTimeout(() => {
             this.setData({
