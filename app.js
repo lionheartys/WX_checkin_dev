@@ -18,6 +18,7 @@ const checkinRoutes = require('./routes/checkin');
 const leaveRoutes = require('./routes/leave');
 const statisticsRoutes = require('./routes/statistics');
 const adminRoutes = require('./routes/admin'); 
+const managerRoutes = require('./routes/manager'); 
 
 
 // 添加测试
@@ -41,6 +42,7 @@ app.use('/api/checkin', checkinRoutes);
 app.use('/api/leave', leaveRoutes);
 app.use('/api/statistics', statisticsRoutes);
 app.use('/api/admin', adminRoutes); 
+app.use('/api/manager', managerRoutes); 
 // 添加测试
 app.use('/api/test', testRoutes);
 
