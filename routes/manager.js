@@ -19,23 +19,42 @@ async function checkProjectPermission(userId, projectId) {
 
 /* -------------------- 项目 CRUD -------------------- */
 
+
 // 1. 获取自己负责的项目列表
 router.get('/projects', async (req, res) => {
   try {
     const managerId = req.user.id;
-    const [projects] = await pool.query(
+    // 前端传来的分页参数，可选
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+
+    // 查询该 manager 的所有项目
+    const [allProjects] = await pool.query(
       `SELECT * FROM projects WHERE manager_id = ? ORDER BY created_at DESC`,
       [managerId]
     );
-    // 在控制台打印查询结果
-    console.log('查询到的项目列表:', projects);
-    
-    res.json({ code: 200, message: '获取成功', data: projects });
+
+    const total = allProjects.length;
+
+    // 根据 page 和 pageSize 做分页
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const list = allProjects.slice(startIndex, endIndex);
+
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: {
+        list,
+        total
+      }
+    });
   } catch (error) {
     console.error('获取项目列表失败:', error);
     res.status(500).json({ code: 500, message: '获取失败' });
   }
 });
+
 
 // 2. 创建项目（自动设置自己为项目管理员）
 router.post('/project', async (req, res) => {
