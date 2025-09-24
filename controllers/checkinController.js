@@ -39,6 +39,22 @@ exports.clockIn = async (req, res) => {
       });
     }
     
+    // 检查是否已离场*****
+    const [exits] = await connection.query(
+      `SELECT * FROM project_entries 
+       WHERE user_id = ? AND location_id = ? AND entry_type = 'exit' AND status = 'approved'`,
+      [userId, location_id]
+    );
+    
+    if (exits.length > 0) {
+      await connection.rollback();
+      return res.status(403).json({
+        code: 403,
+        message: '已离场项目无法打卡',
+        data: null
+      });
+    }
+
     // 获取打卡地信息
     const [locations] = await connection.query(
       'SELECT * FROM checkin_locations WHERE id = ? AND status = 1',
