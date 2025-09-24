@@ -21,9 +21,9 @@
 
   <!-- 筛选栏 -->
   <view class="filter-bar">
-    <picker mode="selector" range="{{filterOptions}}" range-key="label" value="{{currentFilter}}" bindchange="onFilterChange">
+    <picker mode="selector" range="{{filterOptions}}" range-key="label" value="{{currentFilterIndex}}" bindchange="onFilterChange">
       <view class="filter-selector">
-        <text>{{filterOptions[currentFilter === 'all' ? 0 : currentFilter === 'pending' ? 1 : currentFilter === 'approved' ? 2 : 3].label}}</text>
+        <text>{{filterOptions[currentFilterIndex].label}}</text>
         <text class="arrow">▼</text>
       </view>
     </picker>
@@ -41,7 +41,7 @@
           </view>
           <view class="expand-icon">{{expandedUsers[userGroup.user_id] ? '▼' : '▶'}}</view>
         </view>
-        
+
         <!-- 项目列表 -->
         <view class="projects-list" wx:if="{{expandedUsers[userGroup.user_id]}}">
           <block wx:for="{{userGroup.projects}}" wx:key="project_id" wx:for-item="projectGroup">
@@ -50,7 +50,7 @@
                 <text class="project-name">📁 {{projectGroup.project_name}}</text>
                 <view class="expand-icon">{{expandedProjects[userGroup.user_id + '_' + projectGroup.project_id] ? '▼' : '▶'}}</view>
               </view>
-              
+
               <!-- 申请列表 -->
               <view class="applications-items" wx:if="{{expandedProjects[userGroup.user_id + '_' + projectGroup.project_id]}}">
                 <block wx:for="{{projectGroup.applications}}" wx:key="id" wx:for-item="app">
@@ -64,46 +64,47 @@
                         {{getStatusText(app.status)}}
                       </view>
                     </view>
-                    
-                    <view class="app-info">
-                      <view class="info-row">
-                        <text class="info-label">申请类型：</text>
-                        <text class="info-value {{app.entry_type === 'entry' ? 'entry-type' : 'exit-type'}}">
-                          {{getEntryTypeText(app.entry_type)}}
-                        </text>
+
+                    <!-- 申请类型标签 - 更突出的显示 -->
+                    <view class="app-type-tag">
+                      <view class="type-badge {{app.entry_type === 'entry' ? 'entry-badge' : 'exit-badge'}}" 
+                            style="background-color: {{getEntryTypeColor(app.entry_type)}}">
+                        {{app.entry_type === 'entry' ? '🔑' : '🚪'}} {{getEntryTypeText(app.entry_type)}}
                       </view>
-                      
+                    </view>
+
+                    <view class="app-info">
                       <view class="info-row" wx:if="{{app.apply_reason}}">
                         <text class="info-label">申请原因：</text>
                         <text class="info-value">{{app.apply_reason}}</text>
                       </view>
-                      
+
                       <view class="info-row" wx:if="{{app.expect_leavetime}}">
                         <text class="info-label">预计离场：</text>
                         <text class="info-value">{{app.formatted_expect_leavetime}}</text>
                       </view>
-                      
+
                       <view class="info-row">
                         <text class="info-label">申请时间：</text>
                         <text class="info-value">{{app.formatted_created_at}}</text>
                       </view>
-                      
+
                       <view class="info-row" wx:if="{{app.approver_name}}">
                         <text class="info-label">审批人：</text>
                         <text class="info-value">{{app.approver_name}}</text>
                       </view>
-                      
+
                       <view class="info-row" wx:if="{{app.approve_time}}">
                         <text class="info-label">审批时间：</text>
                         <text class="info-value">{{app.formatted_approve_time}}</text>
                       </view>
-                      
+
                       <view class="info-row" wx:if="{{app.approve_remark}}">
                         <text class="info-label">审批备注：</text>
                         <text class="info-value">{{app.approve_remark}}</text>
                       </view>
                     </view>
-                    
+
                     <!-- 操作按钮 -->
                     <view class="action-buttons" wx:if="{{app.status === 'pending'}}">
                       <button class="btn-approve" bindtap="showApproveDialog" 
@@ -142,6 +143,10 @@
         <text>用户：{{currentApproval.username}}</text>
         <text>地点：{{currentApproval.location_name}}</text>
         <text>类型：{{getEntryTypeText(currentApproval.entry_type)}}</text>
+        <text wx:if="{{currentApproval.entry_type === 'exit' && currentApproval.action === 'approved'}}" 
+              style="color: #ff9800; font-size: 12px; margin-top: 8px;">
+          ⚠️ 批准离场申请将自动过期对应的入场记录
+        </text>
       </view>
       <textarea 
         class="remark-input" 

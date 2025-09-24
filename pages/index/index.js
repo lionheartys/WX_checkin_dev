@@ -187,4 +187,18 @@ Page({
       wx.stopPullDownRefresh()
     })
   }
+  // 项目入/离场申请
+  goToProjectApply() {
+    wx.navigateTo({
+      url: '/pages/projectApply/projectApply'
+    })
+  },
+  
+  // 项目离场申请
+  // goToProjectOutApply() {
+  //   wx.navigateTo({
+  //     url: '/pages/projectApply/projectApply'
+  //   })
+  // }
+
 })

@@ -20,6 +20,8 @@
       "pages/admin/projectManagement/projectManagement",
       "pages/manager/projectManagement/projectManagement",
       "pages/manager/locationManagement/locationManagement"
+      "pages/admin/entryApproval/entryApproval",
+      "pages/projectApply/projectApply"
     ],
     "window": {
       "backgroundTextStyle": "light",

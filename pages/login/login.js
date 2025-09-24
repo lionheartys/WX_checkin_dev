@@ -1,4 +1,5 @@
 const api = require('../../utils/request.js')
+const util = require('../../utils/util.js')
 
 Page({
   data: {
@@ -7,16 +8,76 @@ Page({
     password: '',
     confirmPassword: '',
     loading: false,
-    isRegister: false  // false=登录模式, true=注册模式
+    isRegister: false,  // false=登录模式, true=注册模式
+
+    companyList: [],      // [{id, name}]
+    companyNameList: [], 
+    companyIndex: 0  ,
+    roles: ['职工', '项目管理员'],
+    roleIndex: 0,
+    deviceId: ''
   },
 
-  onLoad() {
+  async onLoad() {
+    const deviceId = this.ensureDeviceId()
+    this.setData({ deviceId })
+
+    await this.fetchCompanies()
+
     // 检查是否已登录
     const userInfo = wx.getStorageSync('userInfo')
     if (userInfo) {
       // 根据角色跳转到不同页面
       this.navigateByRole(userInfo.role)
     }
+  },
+
+  // 生成唯一设备ID
+  ensureDeviceId() {
+    let id = wx.getStorageSync('device_id')
+    if (!id) {
+      id = this.genUUIDv4()
+      wx.setStorageSync('device_id', id)
+    }
+    return id
+  },
+
+  genUUIDv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0
+      const v = c === 'x' ? r : (r & 0x3 | 0x8)
+      return v.toString(16)
+    })
+  },
+
+  //复制函数
+  copyDeviceId() {
+    const { deviceId } = this.data;
+    if (!deviceId) return;
+    wx.setClipboardData({
+      data: deviceId,
+      success: () => wx.showToast({ title: '已复制', icon: 'success' })
+    });
+  },
+
+  async fetchCompanies() {
+    try {
+      const res = await util.getCompanies()
+      if (res.code === 200 && Array.isArray(res.data)) {
+        const companyList = res.data
+        const companyNameList = companyList.map(c => c.name)
+        this.setData({ companyList, companyNameList, companyIndex: 0 })
+      } else {
+        wx.showToast({ title: '公司列表获取失败', icon: 'none' })
+      }
+    } catch (e) {
+      console.error('fetchCompanies error', e)
+      wx.showToast({ title: '网络异常', icon: 'none' })
+    }
+  },
+
+  onCompanyChange(e) {
+    this.setData({ companyIndex: Number(e.detail.value) || 0 })
   },
 
   // 添加新方法：根据角色导航到不同页面
@@ -61,6 +122,12 @@ Page({
   onConfirmPasswordInput(e) {
     this.setData({
       confirmPassword: e.detail.value
+    })
+  },
+
+  onCompanyInput(e){
+    this.setData({
+      companyId: e.detail.value
     })
   },
 
@@ -141,7 +208,7 @@ Page({
 
   // 注册 - 保持不变
   async register() {
-    const { username, phone, password, confirmPassword } = this.data
+    const { username, phone, password, confirmPassword, roles, roleIndex, deviceId, companyList, companyIndex} = this.data
     
     if (!username.trim()) {
       wx.showToast({
@@ -184,16 +251,33 @@ Page({
       return
     }
 
+    if (!companyList.length) return wx.showToast({ title: '请先选择公司', icon: 'none' })
+
+    const company = companyList[companyIndex]
+    if (!company || !company.id) return wx.showToast({ title: '公司选择无效', icon: 'none' })
+
     this.setData({ loading: true })
 
     try {
+        const { code } = await new Promise((resolve, reject) => {
+          wx.login({ success: resolve, fail: reject })
+        });
+
+        if (!code) throw new Error('wx.login 未返回 code')
+
+        const roleLabel = roles[roleIndex] || '职工'
+        const roleMap = { '职工': 'staff', '项目管理员': 'project_manager' }
+        const role = roleMap[roleLabel] || 'staff'
+
         const res = await api.register({
           username,
           phone,
           password,
           confirmPassword,
-          company_id: 1,
-          openid: `test_${Date.now()}`
+          company_id: Number(company.id),
+          role,
+          deviceId: deviceId,
+          code
         })
         
         if (res.code === 200) {

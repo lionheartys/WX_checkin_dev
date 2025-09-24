@@ -38,6 +38,29 @@
       <text class="label">确认密码</text>
       <input class="input" type="password" placeholder="请再次输入密码" value="{{confirmPassword}}" bindinput="onConfirmPasswordInput"/>
     </view>
+
+    <view class="input-group">
+    <text class="label">公司</text>
+      <picker mode="selector" range="{{companyNameList}}" value="{{companyIndex}}" bindchange="onCompanyChange">
+        <view class="input picker-display">
+          {{ companyNameList.length ? companyNameList[companyIndex] : '请选择公司' }}
+        </view>
+      </picker>
+  </view>
+
+    <view class="input-group">
+      <text class="label">角色</text>
+      <picker mode="selector" range="{{roles}}" value="{{roleIndex}}" bindchange="onRoleChange">
+        <view class="input picker-display">{{roles[roleIndex]}}</view>
+      </picker>
+    </view>
+
+    <view class="input-group">
+      <text class="label">设备ID</text>
+      <view class="input input-static selectable">{{deviceId}}</view>
+      <button class="btn-copy" size="mini" bindtap="copyDeviceId">复制</button>
+    </view>
+
   </view>
 
   <view class="buttons">
