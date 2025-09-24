@@ -1,0 +1,7 @@
+{
+    "usingComponents": {},
+    "navigationBarTitleText": "入场审批管理",
+    "navigationBarBackgroundColor": "#2196F3",
+    "navigationBarTextStyle": "white",
+    "enablePullDownRefresh": true
+  }
