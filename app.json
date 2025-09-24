@@ -19,7 +19,7 @@
       "pages/admin/companyManagement/companyManagement",
       "pages/admin/projectManagement/projectManagement",
       "pages/manager/projectManagement/projectManagement",
-      "pages/manager/locationManagement/locationManagement"
+      "pages/manager/locationManagement/locationManagement",
       "pages/admin/entryApproval/entryApproval",
       "pages/projectApply/projectApply"
     ],
