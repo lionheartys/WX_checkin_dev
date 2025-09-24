@@ -7,6 +7,7 @@
       "pages/profile/profile",
       "pages/logs/logs",
       "pages/admin/dashboard/dashboard",
+      "pages/manager/dashboard/dashboard",
       "pages/admin/userAudit/userAudit",
       "pages/admin/checkinRecords/checkinRecords",
       "pages/admin/userManagement/userManagement",
@@ -17,6 +18,8 @@
       "pages/admin/locationManagement/locationManagement",
       "pages/admin/companyManagement/companyManagement",
       "pages/admin/projectManagement/projectManagement",
+      "pages/manager/projectManagement/projectManagement",
+      "pages/manager/locationManagement/locationManagement"
       "pages/admin/entryApproval/entryApproval",
       "pages/projectApply/projectApply"
     ],
@@ -35,26 +38,26 @@
         {
           "pagePath": "pages/index/index",
           "text": "首页",
-          "iconPath": "images/home.jpg",
-          "selectedIconPath": "images/home-active.jpg"
+          "iconPath": "images/home.png",
+          "selectedIconPath": "images/home-active.png"
         },
         {
           "pagePath": "pages/checkin/checkin", 
           "text": "打卡",
-          "iconPath": "images/checkin.jpg",
-          "selectedIconPath": "images/checkin-active.jpg"
+          "iconPath": "images/checkin.png",
+          "selectedIconPath": "images/checkin-active.png"
         },
         {
           "pagePath": "pages/history/history",
           "text": "记录", 
-          "iconPath": "images/history.jpg",
-          "selectedIconPath": "images/history-active.jpg"
+          "iconPath": "images/history.png",
+          "selectedIconPath": "images/history-active.png"
         },
         {
           "pagePath": "pages/profile/profile",
           "text": "我的",
-          "iconPath": "images/profile.jpg", 
-          "selectedIconPath": "images/profile-active.jpg"
+          "iconPath": "images/profile.png", 
+          "selectedIconPath": "images/profile.png"
         }
       ]
     },
