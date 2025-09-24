@@ -186,7 +186,7 @@ Page({
     this.loadTodayRecords().finally(() => {
       wx.stopPullDownRefresh()
     })
-  }
+  },
   // 项目入/离场申请
   goToProjectApply() {
     wx.navigateTo({
