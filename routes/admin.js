@@ -1545,18 +1545,64 @@ router.post('/entry-applications/:id/approve', async (req, res) => {
       });
     }
     
+    const application = applications[0];
+    
     // 更新审批状态
     await connection.query(
       `UPDATE project_entries 
        SET status = ?, 
            approver_id = ?, 
            approve_time = NOW(), 
-           approve_remark = ?
+           approve_remark = ? 
        WHERE id = ?`,
       [status, approver_id, approve_remark, id]
     );
     
-    // 记录操作日志
+    // 如果是批准离场申请，检查预计离场时间并将对应的入场申请设为过期
+    if (status === 'approved' && application.entry_type === 'exit') {
+      const currentTime = new Date();  // 获取当前时间
+      const expectLeaveTime = new Date(application.expect_leavetime);  // 预计离场时间
+
+      // 检查当前时间是否已经达到预计离场时间
+      if (currentTime >= expectLeaveTime) {
+        // 更新对应的入场申请为 expired
+        await connection.query(
+          `UPDATE project_entries 
+           SET status = 'expired', 
+               updated_at = NOW() 
+           WHERE user_id = ? 
+             AND project_id = ? 
+             AND location_id = ? 
+             AND entry_type = 'entry' 
+             AND status = 'approved'`,
+          [application.user_id, application.project_id, application.location_id]
+        );
+        
+        // 记录入场申请过期的操作日志
+        await connection.query(
+          `INSERT INTO operation_logs (user_id, operation_type, target_type, target_id, operation_detail)
+           VALUES (?, ?, ?, ?, ?)`,
+          [
+            approver_id,
+            'EXPIRE_ENTRY',
+            'PROJECT_ENTRY',
+            application.user_id,
+            JSON.stringify({ 
+              reason: 'exit_approved',
+              user_id: application.user_id,
+              project_id: application.project_id,
+              location_id: application.location_id,
+              exit_application_id: id
+            })
+          ]
+        );
+      } else {
+        // 离场时间未到，发送提醒消息（如果需要）
+        console.log('预计离场时间尚未到达');
+      }
+    }
+    
+    // 记录审批操作日志
     await connection.query(
       `INSERT INTO operation_logs (user_id, operation_type, target_type, target_id, operation_detail)
        VALUES (?, ?, ?, ?, ?)`,
@@ -1565,7 +1611,11 @@ router.post('/entry-applications/:id/approve', async (req, res) => {
         status === 'approved' ? 'APPROVE_ENTRY' : 'REJECT_ENTRY',
         'PROJECT_ENTRY',
         id,
-        JSON.stringify({ status, approve_remark })
+        JSON.stringify({ 
+          status, 
+          approve_remark,
+          entry_type: application.entry_type
+        })
       ]
     );
     
@@ -1573,7 +1623,9 @@ router.post('/entry-applications/:id/approve', async (req, res) => {
     
     res.json({
       code: 200,
-      message: `${status === 'approved' ? '批准' : '拒绝'}成功`
+      message: `${status === 'approved' ? '批准' : '拒绝'}成功${
+        status === 'approved' && application.entry_type === 'exit' ? '，相关入场申请已自动过期' : ''
+      }`
     });
   } catch (error) {
     await connection.rollback();
@@ -1587,6 +1639,7 @@ router.post('/entry-applications/:id/approve', async (req, res) => {
     connection.release();
   }
 });
+
 
 // 41. 获取项目入场申请统计
 router.get('/entry-applications/statistics', async (req, res) => {
