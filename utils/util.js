@@ -1,3 +1,5 @@
+const { request } = require("./request")
+
 // 格式化时间
 function formatTime(date) {
     const year = date.getFullYear()
@@ -28,8 +30,21 @@ function formatTime(date) {
     s = Math.round(s * 10000) / 10000
     return s * 1000 // 返回米
   }
-  
+  function getCompanies() {
+    return request({
+      url: '/company/get_companies_name_and_id',
+      method: 'GET'
+    })
+  }
+
   module.exports = {
     formatTime,
-    calculateDistance
+    calculateDistance,
+    getCompanies
+  //   getCompanies() {
+  //   return request({
+  //     url: '/company/get_companies_name_and_id',
+  //     method: 'GET'
+  //   })
+  // }
   }

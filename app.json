@@ -17,7 +17,8 @@
       "pages/admin/locationManagement/locationManagement",
       "pages/admin/companyManagement/companyManagement",
       "pages/admin/projectManagement/projectManagement",
-      "pages/admin/entryApproval/entryApproval"
+      "pages/admin/entryApproval/entryApproval",
+      "pages/projectApply/projectApply"
     ],
     "window": {
       "backgroundTextStyle": "light",

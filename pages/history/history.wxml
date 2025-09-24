@@ -44,10 +44,10 @@
       <text class="stat-number">{{statistics.lateDays}}</text>
       <text class="stat-label">迟到</text>
     </view>
-    <view class="stat-item">
+    <!-- <view class="stat-item">
       <text class="stat-number">{{statistics.absentDays}}</text>
       <text class="stat-label">缺勤</text>
-    </view>
+    </view> -->
   </view>
 
   <!-- 记录列表 -->

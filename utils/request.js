@@ -456,6 +456,32 @@ adminGetProjectsManage: (params = {}) => {
       url: '/admin/entry-applications/statistics',
       method: 'GET'
     })
+  },
+
+  //拉取项目列表
+  getProjectList: () => {
+    return request({
+      url: '/project/get-project-list',
+      method: 'POST'
+    })
+  },
+
+  //拉取项目下所属的打卡地
+  getProjectLocations: (projectId) => {
+    return request({
+      url: '/project/get-project-locations-list',
+      method: 'POST',
+      data: { project_id: projectId }
+    })
+  },
+
+  //项目入/离场申请提交
+  projectApplySubmit: (data) => {
+    return request({
+      url: '/project/project-apply',
+      method: 'POST',
+      data
+    })
   }
 }
 // 导出api对象

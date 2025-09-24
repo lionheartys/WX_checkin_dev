@@ -52,6 +52,23 @@
       <text class="action-text">请假申请</text>
       <text class="action-desc">在线申请</text>
     </view>
+
+    <view class="action-item" bindtap="goToProjectApply">
+      <view class="action-icon-wrapper project-in">
+        <text class="iconfont">🚧</text>
+      </view>
+      <text class="action-text">项目入/离场</text>
+      <text class="action-desc">入场申请</text>
+    </view>
+
+    <!-- <view class="action-item" bindtap="goToProjectOutApply">
+      <view class="action-icon-wrapper project-out">
+        <text class="iconfont">🏁</text>
+      </view>
+      <text class="action-text">项目离场</text>
+      <text class="action-desc">离场申请</text>
+    </view> -->
+
   </view>
 
   <!-- 今日打卡记录 -->
