@@ -1,0 +1,164 @@
+<!--pages/admin/companyManagement/companyManagement.wxml-->
+<view class="company-management">
+  <!-- 顶部搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrapper">
+      <input class="search-input" placeholder="搜索公司名称" value="{{keyword}}" bindinput="onSearchInput" bindconfirm="onSearch" />
+      <button class="search-btn" size="mini" type="primary" bindtap="onSearch">搜索</button>
+    </view>
+    
+    <view class="filter-wrapper">
+      <picker bindchange="onStatusChange" value="{{selectedStatus}}" range="{{statusOptions}}" range-key="label">
+        <view class="filter-select">
+          状态：{{statusOptions[selectedStatus === '' ? 0 : selectedStatus === '1' ? 1 : 2].label}}
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-bar">
+    <button class="action-btn" type="primary" size="mini" bindtap="showAddCompany">添加公司</button>
+    <button class="action-btn" type="warn" size="mini" bindtap="showBatchUpdate" wx:if="{{selectedCompanies.length > 0}}">
+      批量更新有效期({{selectedCompanies.length}})
+    </button>
+    <button class="action-btn" type="default" size="mini" bindtap="toggleSelectAll">
+      {{selectedCompanies.length === companies.length && companies.length > 0 ? '取消全选' : '全选'}}
+    </button>
+  </view>
+
+  <!-- 公司列表 -->
+  <view class="company-list">
+    <view wx:if="{{companies.length === 0 && !loading}}" class="empty-tips">
+      暂无公司数据
+    </view>
+    
+    <view wx:for="{{companies}}" wx:key="id" class="company-item">
+      <view class="company-checkbox">
+        <checkbox value="{{item.id}}" checked="{{selectedCompanies.indexOf(item.id) > -1}}" bindtap="onSelectCompany" data-id="{{item.id}}" />
+      </view>
+      
+      <view class="company-info">
+        <view class="company-name">{{item.company_name}}</view>
+        <view class="company-meta">
+          <text class="meta-item">有效期至：{{formatDate(item.valid_until)}}</text>
+          <text class="meta-item validity-{{item.validity_status}}">
+            {{item.validity_status === 'expired' ? '已过期' : item.validity_status === 'expiring' ? '即将过期' : '正常'}}
+          </text>
+        </view>
+        <view class="company-time">
+          <text>创建时间：{{formatDate(item.created_at)}}</text>
+        </view>
+      </view>
+      
+      <view class="company-actions">
+        <text class="status-badge {{item.status === 1 ? 'active' : 'inactive'}}">
+          {{item.status === 1 ? '启用' : '禁用'}}
+        </text>
+        <button size="mini" type="default" bindtap="showEditCompany" data-company="{{item}}">编辑</button>
+        <button size="mini" type="{{item.status === 1 ? 'warn' : 'primary'}}" bindtap="toggleStatus" data-id="{{item.id}}" data-status="{{item.status}}">
+          {{item.status === 1 ? '禁用' : '启用'}}
+        </button>
+        <button size="mini" type="warn" bindtap="deleteCompany" data-id="{{item.id}}" data-name="{{item.company_name}}">删除</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分页 -->
+  <view class="pagination" wx:if="{{total > pageSize}}">
+    <button size="mini" bindtap="onPageChange" data-type="prev" disabled="{{page === 1}}">上一页</button>
+    <text class="page-info">第 {{page}} 页 / 共 {{Math.ceil(total/pageSize)}} 页</text>
+    <button size="mini" bindtap="onPageChange" data-type="next" disabled="{{page >= Math.ceil(total/pageSize)}}">下一页</button>
+  </view>
+
+  <!-- 添加公司对话框 -->
+  <view class="dialog-mask" wx:if="{{showAddDialog}}" bindtap="closeDialog"></view>
+  <view class="dialog" wx:if="{{showAddDialog}}">
+    <view class="dialog-header">
+      <text>添加公司</text>
+      <text class="dialog-close" bindtap="closeDialog">×</text>
+    </view>
+    <view class="dialog-body">
+      <view class="form-item">
+        <text class="form-label">公司名称</text>
+        <input class="form-input" placeholder="请输入公司名称" value="{{formData.company_name}}" bindinput="onFormInput" data-field="company_name" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">有效期至</text>
+        <picker mode="date" value="{{formData.valid_until}}" bindchange="onDateChange">
+          <view class="form-input picker-value">
+            {{formData.valid_until || '请选择有效期'}}
+          </view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">状态</text>
+        <switch checked="{{formData.status === 1}}" bindchange="onStatusSwitch" />
+        <text class="switch-label">{{formData.status === 1 ? '启用' : '禁用'}}</text>
+      </view>
+    </view>
+    <view class="dialog-footer">
+      <button size="mini" bindtap="closeDialog">取消</button>
+      <button size="mini" type="primary" bindtap="submitAdd">确定</button>
+    </view>
+  </view>
+
+  <!-- 编辑公司对话框 -->
+  <view class="dialog-mask" wx:if="{{showEditDialog}}" bindtap="closeDialog"></view>
+  <view class="dialog" wx:if="{{showEditDialog}}">
+    <view class="dialog-header">
+      <text>编辑公司</text>
+      <text class="dialog-close" bindtap="closeDialog">×</text>
+    </view>
+    <view class="dialog-body">
+      <view class="form-item">
+        <text class="form-label">公司名称</text>
+        <input class="form-input" placeholder="请输入公司名称" value="{{formData.company_name}}" bindinput="onFormInput" data-field="company_name" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">有效期至</text>
+        <picker mode="date" value="{{formData.valid_until}}" bindchange="onDateChange">
+          <view class="form-input picker-value">
+            {{formData.valid_until || '请选择有效期'}}
+          </view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">状态</text>
+        <switch checked="{{formData.status === 1}}" bindchange="onStatusSwitch" />
+        <text class="switch-label">{{formData.status === 1 ? '启用' : '禁用'}}</text>
+      </view>
+    </view>
+    <view class="dialog-footer">
+      <button size="mini" bindtap="closeDialog">取消</button>
+      <button size="mini" type="primary" bindtap="submitEdit">确定</button>
+    </view>
+  </view>
+
+  <!-- 批量更新有效期对话框 -->
+  <view class="dialog-mask" wx:if="{{showBatchUpdateDialog}}" bindtap="closeDialog"></view>
+  <view class="dialog" wx:if="{{showBatchUpdateDialog}}">
+    <view class="dialog-header">
+      <text>批量更新有效期</text>
+      <text class="dialog-close" bindtap="closeDialog">×</text>
+    </view>
+    <view class="dialog-body">
+      <view class="form-item">
+        <text class="form-label">选中公司数</text>
+        <text>{{selectedCompanies.length}} 家</text>
+      </view>
+      <view class="form-item">
+        <text class="form-label">新的有效期</text>
+        <picker mode="date" value="{{batchValidUntil}}" bindchange="onBatchDateChange">
+          <view class="form-input picker-value">
+            {{batchValidUntil || '请选择有效期'}}
+          </view>
+        </picker>
+      </view>
+    </view>
+    <view class="dialog-footer">
+      <button size="mini" bindtap="closeDialog">取消</button>
+      <button size="mini" type="primary" bindtap="submitBatchUpdate">确定更新</button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,102 @@
+<view class="page">
+  <view class="header-bg"></view>
+
+  <!-- 表单卡片 -->
+  <view class="form-card">
+    <!-- 项目 -->
+    <view class="form-item">
+      <view class="item-left">
+        <text class="item-label">项目</text>
+        <text class="item-desc">项目名称</text>
+      </view>
+      <picker mode="selector"
+        range="{{projects}}"
+        range-key="project_name" 
+        value="{{projectIndex}}"
+        bindchange="onProjectChange"
+        disabled="{{loading.projects}}">
+        <view class="picker-value {{!projects.length ? 'placeholder': ''}}">
+          {{ projects.length ? projects[projectIndex].project_name : (loading.projects ? '加载中…' : '请选择项目') }}
+        </view>
+      </picker>
+    </view>
+
+    <!-- 打卡地 -->
+    <view class="form-item">
+      <view class="item-left">
+        <text class="item-label">打卡地</text>
+        <text class="item-desc">地点名称</text>
+      </view>
+      <picker mode="selector"
+              range="{{locations}}"
+              range-key="location_name"
+              value="{{locationIndex}}"
+              bindchange="onLocationChange"
+              disabled="{{!locations.length || loading.locations}}">
+        <view class="picker-value {{!locations.length ? 'placeholder': ''}}">
+          {{ locations.length ? locations[locationIndex].location_name : (loading.locations ? '加载中…' : '请先选择项目') }}
+        </view>
+      </picker>
+    </view>
+
+    <!-- 入/离场 -->
+    <view class="form-item">
+      <view class="item-left">
+        <text class="item-label">类型</text>
+        <text class="item-desc">选择入场或离场</text>
+      </view>
+      <picker mode="selector"
+              range="{{inOutLabels}}"
+              value="{{inOutIndex}}"
+              bindchange="onInOutChange">
+        <view class="picker-value">
+          {{ inOutLabels[inOutIndex] }}
+        </view>
+      </picker>
+    </view>
+
+    <!-- 预计离场时间（滚轮） -->
+    <view class="form-item">
+      <view class="item-left">
+        <text class="item-label">预计离场</text>
+        <text class="item-desc">选择日期与时间</text>
+      </view>
+      <view class="datetime-row">
+        <picker mode="date" value="{{date}}" start="{{dateStart}}" end="{{dateEnd}}" bindchange="onDateChange">
+          <view class="picker-value small">{{date}}</view>
+        </picker>
+        <picker mode="time" value="{{time}}" start="00:00" end="23:59" bindchange="onTimeChange">
+          <view class="picker-value small">{{time}}</view>
+        </picker>
+      </view>
+      <view class="tips" wx:if="{{inOutValues[inOutIndex] === 'in'}}">* 入场时建议填写预计离场时间</view>
+    </view>
+
+    <!-- 申请原因-->
+    <view class="form-item column">
+      <view class="item-left">
+        <text class="item-label">申请原因</text>
+        <text class="item-desc">请填写本次入/离场申请的原因</text>
+      </view>
+      <view class="textarea-wrap">
+        <textarea class="reason-textarea"
+                  placeholder="如：因项目实施阶段需要现场驻点；或：阶段性调离现场…"
+                  maxlength="200"
+                  auto-height="{{true}}"
+                  bindinput="onReasonInput"
+                  value="{{reason}}"
+        />
+        <text class="counter">{{reason.length}}/200</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交 -->
+  <view class="bottom-bar">
+    <button class="submit-btn" loading="{{submitting}}" disabled="{{submitting || !canSubmit}}" bindtap="onSubmit">
+      {{ submitting ? '提交中…' : '提交申请' }}
+    </button>
+  </view>
+
+  <view class="bottom-decoration"></view>
+</view>

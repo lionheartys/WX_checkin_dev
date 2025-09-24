@@ -5,7 +5,20 @@
       "pages/checkin/checkin",
       "pages/history/history",
       "pages/profile/profile",
-      "pages/logs/logs"
+      "pages/logs/logs",
+      "pages/admin/dashboard/dashboard",
+      "pages/admin/userAudit/userAudit",
+      "pages/admin/checkinRecords/checkinRecords",
+      "pages/admin/userManagement/userManagement",
+      "pages/admin/statistics/statistics",
+      "pages/admin/makeupAudit/makeupAudit",
+      "pages/leave/leave",
+      "pages/admin/leaveAudit/leaveAudit",
+      "pages/admin/locationManagement/locationManagement",
+      "pages/admin/companyManagement/companyManagement",
+      "pages/admin/projectManagement/projectManagement",
+      "pages/admin/entryApproval/entryApproval",
+      "pages/projectApply/projectApply"
     ],
     "window": {
       "backgroundTextStyle": "light",

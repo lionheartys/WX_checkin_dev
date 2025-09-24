@@ -1,0 +1,275 @@
+<!--pages/leave/leave.wxml-->
+<view class="leave-page">
+  <!-- 顶部标签栏 -->
+  <view class="tabs">
+    <view 
+      class="tab-item {{activeTab === 'apply' ? 'active' : ''}}"
+      data-tab="apply"
+      bindtap="switchTab"
+    >
+      <text>请假申请</text>
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'history' ? 'active' : ''}}"
+      data-tab="history"
+      bindtap="switchTab"
+    >
+      <text>请假记录</text>
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'quota' ? 'active' : ''}}"
+      data-tab="quota"
+      bindtap="switchTab"
+    >
+      <text>调休额度</text>
+    </view>
+  </view>
+
+  <!-- 请假申请表单 -->
+  <view class="tab-content" wx:if="{{activeTab === 'apply'}}">
+    <view class="form-card">
+      <!-- 请假类型 -->
+      <view class="form-item">
+        <text class="form-label">请假类型</text>
+        <picker 
+          mode="selector" 
+          range="{{leaveTypes}}" 
+          range-key="type_name"
+          value="{{selectedTypeIndex}}"
+          bindchange="onLeaveTypeChange"
+        >
+          <view class="picker-value">
+            <text>{{selectedType.type_name}}</text>
+            <text class="arrow">></text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- 开始日期 -->
+      <view class="form-item">
+        <text class="form-label">开始日期</text>
+        <picker 
+          mode="date" 
+          value="{{startDate}}"
+          bindchange="onStartDateChange"
+        >
+          <view class="picker-value">
+            <text>{{startDate}}</text>
+            <text class="arrow">></text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- 结束日期 -->
+      <view class="form-item">
+        <text class="form-label">结束日期</text>
+        <picker 
+          mode="date" 
+          value="{{endDate}}"
+          start="{{startDate}}"
+          bindchange="onEndDateChange"
+        >
+          <view class="picker-value">
+            <text>{{endDate}}</text>
+            <text class="arrow">></text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- 请假天数 -->
+      <view class="form-item">
+        <text class="form-label">请假天数</text>
+        <view class="form-value">
+          <text class="days-count">{{leaveDays}}</text>
+          <text class="days-unit">天</text>
+        </view>
+      </view>
+
+      <!-- 请假原因 -->
+      <view class="form-item">
+        <text class="form-label">请假原因</text>
+        <textarea 
+          class="reason-input"
+          placeholder="请输入请假原因（必填）"
+          value="{{reason}}"
+          bindinput="onReasonInput"
+          maxlength="200"
+        />
+      </view>
+
+      <!-- 提示信息 -->
+      <view class="tips" wx:if="{{selectedType.type_code === 'compensatory'}}">
+        <text>提示：当前可用调休额度 {{compensatoryQuota.available}} 天</text>
+      </view>
+
+      <!-- 提交按钮 -->
+      <button 
+        class="submit-btn" 
+        bindtap="submitLeaveApplication"
+        disabled="{{loading}}"
+      >
+        提交申请
+      </button>
+    </view>
+  </view>
+
+  <!-- 请假记录 -->
+  <view class="tab-content" wx:if="{{activeTab === 'history'}}">
+    <view class="history-list" wx:if="{{leaveHistory.length > 0}}">
+      <view 
+        class="history-item" 
+        wx:for="{{leaveHistory}}" 
+        wx:key="id"
+        data-index="{{index}}"
+        bindtap="viewLeaveDetail"
+      >
+        <view class="history-header">
+          <view class="history-type">{{item.type_name}}</view>
+          <view class="history-status {{item.statusClass}}">
+            {{item.statusText}}
+          </view>
+        </view>
+        <view class="history-content">
+          <view class="history-date">
+            <text class="label">日期：</text>
+            <text>{{item.dateRange}}</text>
+          </view>
+          <view class="history-days">
+            <text class="label">天数：</text>
+            <text>{{item.leave_days}}天</text>
+          </view>
+          <view class="history-reason">
+            <text class="label">原因：</text>
+            <text class="reason-text">{{item.reason}}</text>
+          </view>
+        </view>
+        <view class="history-footer">
+          <text class="create-time">申请时间：{{item.created_at}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 无记录提示 -->
+    <view class="empty-container" wx:else>
+      <view class="empty-icon">📝</view>
+      <text class="empty-text">暂无请假记录</text>
+    </view>
+  </view>
+
+  <!-- 调休额度 -->
+  <view class="tab-content" wx:if="{{activeTab === 'quota'}}">
+    <view class="quota-card">
+      <view class="quota-header">
+        <text class="quota-title">我的调休额度</text>
+      </view>
+      
+      <view class="quota-stats">
+        <view class="quota-item">
+          <text class="quota-value">{{compensatoryQuota.total}}</text>
+          <text class="quota-label">总额度(天)</text>
+        </view>
+        <view class="quota-divider"></view>
+        <view class="quota-item">
+          <text class="quota-value used">{{compensatoryQuota.used}}</text>
+          <text class="quota-label">已使用(天)</text>
+        </view>
+        <view class="quota-divider"></view>
+        <view class="quota-item">
+          <text class="quota-value available">{{compensatoryQuota.available}}</text>
+          <text class="quota-label">可用(天)</text>
+        </view>
+      </view>
+
+      <!-- 申请调休额度按钮 -->
+      <button 
+        class="apply-quota-btn"
+        bindtap="showQuotaApplication"
+      >
+        申请调休额度
+      </button>
+
+      <!-- 调休规则说明 -->
+      <view class="quota-rules">
+        <view class="rules-title">调休规则说明</view>
+        <view class="rules-content">
+          <text>1. 出差满14天起算，可申请1天调休</text>
+          <text>2. 超过14天部分，每10天可申请1天调休</text>
+          <text>3. 调休额度有效期为一年</text>
+          <text>4. 使用调休需提前申请审批</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 调休额度申请弹窗 -->
+  <view class="modal-mask" wx:if="{{showQuotaDialog}}" bindtap="hideQuotaDialog"></view>
+  <view class="modal-dialog" wx:if="{{showQuotaDialog}}">
+    <view class="modal-header">
+      <text class="modal-title">申请调休额度</text>
+      <text class="modal-close" bindtap="hideQuotaDialog">×</text>
+    </view>
+    
+    <view class="modal-body">
+      <!-- 出差开始日期 -->
+      <view class="modal-form-item">
+        <text class="modal-label">出差开始日期</text>
+        <picker 
+          mode="date" 
+          value="{{businessStartDate}}"
+          bindchange="onBusinessStartDateChange"
+        >
+          <view class="modal-picker-value">
+            <text>{{businessStartDate}}</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- 出差结束日期 -->
+      <view class="modal-form-item">
+        <text class="modal-label">出差结束日期</text>
+        <picker 
+          mode="date" 
+          value="{{businessEndDate}}"
+          start="{{businessStartDate}}"
+          bindchange="onBusinessEndDateChange"
+        >
+          <view class="modal-picker-value">
+            <text>{{businessEndDate}}</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- 出差天数 -->
+      <view class="modal-form-item">
+        <text class="modal-label">出差天数</text>
+        <view class="modal-value">
+          <text class="{{businessDays >= 14 ? 'valid' : 'invalid'}}">{{businessDays}}天</text>
+        </view>
+      </view>
+
+      <!-- 可申请调休天数 -->
+      <view class="modal-form-item">
+        <text class="modal-label">可申请调休</text>
+        <view class="modal-value">
+          <text class="quota-days">{{quotaDays}}天</text>
+        </view>
+      </view>
+
+      <!-- 提示信息 -->
+      <view class="modal-tips" wx:if="{{businessDays < 14}}">
+        <text>提示：出差需满14天才能申请调休</text>
+      </view>
+    </view>
+
+    <view class="modal-footer">
+      <button class="modal-btn cancel" bindtap="hideQuotaDialog">取消</button>
+      <button 
+        class="modal-btn confirm" 
+        bindtap="submitQuotaApplication"
+        disabled="{{businessDays < 14}}"
+      >
+        提交申请
+      </button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,167 @@
+<view class="container">
+  <!-- 头部统计 -->
+  <view class="statistics-card">
+    <view class="stat-item">
+      <view class="stat-value" style="color: #ff9800;">{{statistics.pending}}</view>
+      <view class="stat-label">待审批</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-value" style="color: #4caf50;">{{statistics.approved}}</view>
+      <view class="stat-label">已批准</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-value" style="color: #f44336;">{{statistics.rejected}}</view>
+      <view class="stat-label">已拒绝</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-value">{{statistics.total}}</view>
+      <view class="stat-label">总申请</view>
+    </view>
+  </view>
+
+  <!-- 筛选栏 -->
+  <view class="filter-bar">
+    <picker mode="selector" range="{{filterOptions}}" range-key="label" value="{{currentFilterIndex}}" bindchange="onFilterChange">
+      <view class="filter-selector">
+        <text>{{filterOptions[currentFilterIndex].label}}</text>
+        <text class="arrow">▼</text>
+      </view>
+    </picker>
+  </view>
+
+  <!-- 申请列表 -->
+  <view class="applications-list" wx:if="{{filteredApplications.length > 0}}">
+    <block wx:for="{{filteredApplications}}" wx:key="user_id" wx:for-item="userGroup">
+      <!-- 用户分组 -->
+      <view class="user-group">
+        <view class="user-header" bindtap="toggleUser" data-user-id="{{userGroup.user_id}}">
+          <view class="user-info">
+            <text class="user-name">{{userGroup.username}}</text>
+            <text class="user-phone">{{userGroup.phone}}</text>
+          </view>
+          <view class="expand-icon">{{expandedUsers[userGroup.user_id] ? '▼' : '▶'}}</view>
+        </view>
+
+        <!-- 项目列表 -->
+        <view class="projects-list" wx:if="{{expandedUsers[userGroup.user_id]}}">
+          <block wx:for="{{userGroup.projects}}" wx:key="project_id" wx:for-item="projectGroup">
+            <view class="project-group">
+              <view class="project-header" bindtap="toggleProject" data-key="{{userGroup.user_id + '_' + projectGroup.project_id}}">
+                <text class="project-name">📁 {{projectGroup.project_name}}</text>
+                <view class="expand-icon">{{expandedProjects[userGroup.user_id + '_' + projectGroup.project_id] ? '▼' : '▶'}}</view>
+              </view>
+
+              <!-- 申请列表 -->
+              <view class="applications-items" wx:if="{{expandedProjects[userGroup.user_id + '_' + projectGroup.project_id]}}">
+                <block wx:for="{{projectGroup.applications}}" wx:key="id" wx:for-item="app">
+                  <view class="application-card">
+                    <view class="app-header">
+                      <view class="app-location">
+                        <text class="location-icon">📍</text>
+                        <text class="location-name">{{app.location_name}}</text>
+                      </view>
+                      <view class="app-status" style="color: {{getStatusColor(app.status)}}">
+                        {{getStatusText(app.status)}}
+                      </view>
+                    </view>
+
+                    <!-- 申请类型标签 - 更突出的显示 -->
+                    <view class="app-type-tag">
+                      <view class="type-badge {{app.entry_type === 'entry' ? 'entry-badge' : 'exit-badge'}}" 
+                            style="background-color: {{getEntryTypeColor(app.entry_type)}}">
+                        {{app.entry_type === 'entry' ? '🔑' : '🚪'}} {{getEntryTypeText(app.entry_type)}}
+                      </view>
+                    </view>
+
+                    <view class="app-info">
+                      <view class="info-row" wx:if="{{app.apply_reason}}">
+                        <text class="info-label">申请原因：</text>
+                        <text class="info-value">{{app.apply_reason}}</text>
+                      </view>
+
+                      <view class="info-row" wx:if="{{app.expect_leavetime}}">
+                        <text class="info-label">预计离场：</text>
+                        <text class="info-value">{{app.formatted_expect_leavetime}}</text>
+                      </view>
+
+                      <view class="info-row">
+                        <text class="info-label">申请时间：</text>
+                        <text class="info-value">{{app.formatted_created_at}}</text>
+                      </view>
+
+                      <view class="info-row" wx:if="{{app.approver_name}}">
+                        <text class="info-label">审批人：</text>
+                        <text class="info-value">{{app.approver_name}}</text>
+                      </view>
+
+                      <view class="info-row" wx:if="{{app.approve_time}}">
+                        <text class="info-label">审批时间：</text>
+                        <text class="info-value">{{app.formatted_approve_time}}</text>
+                      </view>
+
+                      <view class="info-row" wx:if="{{app.approve_remark}}">
+                        <text class="info-label">审批备注：</text>
+                        <text class="info-value">{{app.approve_remark}}</text>
+                      </view>
+                    </view>
+
+                    <!-- 操作按钮 -->
+                    <view class="action-buttons" wx:if="{{app.status === 'pending'}}">
+                      <button class="btn-approve" bindtap="showApproveDialog" 
+                              data-application="{{app}}" data-action="approved" data-usergroup="{{userGroup}}">
+                        批准
+                      </button>
+                      <button class="btn-reject" bindtap="showApproveDialog" 
+                              data-application="{{app}}" data-action="rejected" data-usergroup="{{userGroup}}">
+                        拒绝
+                      </button>
+                    </view>
+                  </view>
+                </block>
+              </view>
+            </view>
+          </block>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:else>
+    <text class="empty-icon">📋</text>
+    <text class="empty-text">暂无{{currentFilter === 'pending' ? '待审批的' : currentFilter === 'approved' ? '已批准的' : currentFilter === 'rejected' ? '已拒绝的' : ''}}申请</text>
+  </view>
+
+  <!-- 审批对话框 -->
+  <view class="dialog-mask" wx:if="{{showApproveDialog}}" bindtap="closeApproveDialog"></view>
+  <view class="dialog" wx:if="{{showApproveDialog}}">
+    <view class="dialog-header">
+      <text>{{currentApproval.action === 'approved' ? '批准申请' : '拒绝申请'}}</text>
+    </view>
+    <view class="dialog-body">
+      <view class="dialog-info">
+        <text>用户：{{currentApproval.username}}</text>
+        <text>地点：{{currentApproval.location_name}}</text>
+        <text>类型：{{getEntryTypeText(currentApproval.entry_type)}}</text>
+        <text wx:if="{{currentApproval.entry_type === 'exit' && currentApproval.action === 'approved'}}" 
+              style="color: #ff9800; font-size: 12px; margin-top: 8px;">
+          ⚠️ 批准离场申请将自动过期对应的入场记录
+        </text>
+      </view>
+      <textarea 
+        class="remark-input" 
+        placeholder="请输入审批备注（可选）"
+        value="{{approveRemark}}"
+        bindinput="onRemarkInput"
+        maxlength="200"
+      />
+    </view>
+    <view class="dialog-footer">
+      <button class="dialog-btn cancel" bindtap="closeApproveDialog">取消</button>
+      <button class="dialog-btn confirm {{currentApproval.action === 'approved' ? 'approve' : 'reject'}}" 
+              bindtap="confirmApprove">
+        确定
+      </button>
+    </view>
+  </view>
+</view>

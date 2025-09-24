@@ -1,0 +1,77 @@
+<view class="statistics-page">
+  <view class="header">
+    <text class="title">数据统计</text>
+  </view>
+
+  <!-- 日期选择器 -->
+  <view class="date-selector">
+    <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+      <view class="date-item">
+        <text>开始日期：{{startDate}}</text>
+      </view>
+    </picker>
+    <text class="date-separator">至</text>
+    <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+      <view class="date-item">
+        <text>结束日期：{{endDate}}</text>
+      </view>
+    </picker>
+  </view>
+
+  <!-- 统计概览 -->
+  <view class="overview-section">
+    <text class="section-title">统计概览</text>
+    <view class="overview-grid">
+      <view class="overview-item">
+        <text class="overview-value">{{statistics.totalCheckins}}</text>
+        <text class="overview-label">总打卡次数</text>
+      </view>
+      <view class="overview-item">
+        <text class="overview-value">{{statistics.avgDaily}}</text>
+        <text class="overview-label">日均打卡</text>
+      </view>
+      <view class="overview-item">
+        <text class="overview-value">{{statistics.lateCount}}</text>
+        <text class="overview-label">迟到次数</text>
+      </view>
+      <view class="overview-item">
+        <text class="overview-value">{{statistics.earlyCount}}</text>
+        <text class="overview-label">早退次数</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 出勤率统计 -->
+  <view class="attendance-section">
+    <text class="section-title">出勤率统计</text>
+    <view class="attendance-chart">
+      <view class="chart-item">
+        <view class="chart-bar" style="height: {{statistics.attendanceRate}}%;"></view>
+        <text class="chart-label">出勤率</text>
+        <text class="chart-value">{{statistics.attendanceRate}}%</text>
+      </view>
+      <view class="chart-item">
+        <view class="chart-bar" style="height: {{statistics.punctualRate}}%;"></view>
+        <text class="chart-label">准时率</text>
+        <text class="chart-value">{{statistics.punctualRate}}%</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 部门统计 -->
+  <view class="department-section">
+    <text class="section-title">部门统计TOP5</text>
+    <view class="department-list">
+      <view wx:for="{{topDepartments}}" wx:key="index" class="department-item">
+        <text class="dept-rank">{{index + 1}}</text>
+        <text class="dept-name">{{item.name}}</text>
+        <text class="dept-rate">{{item.rate}}%</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 导出按钮 -->
+  <view class="export-section">
+    <button class="export-btn" bindtap="exportData">导出报表</button>
+  </view>
+</view>

@@ -1,0 +1,83 @@
+/* pages/admin/userAudit/userAudit.wxss */
+.container {
+    padding: 20rpx;
+    background: #f5f5f5;
+    min-height: 100vh;
+  }
+  
+  .header {
+    background: #fff;
+    padding: 30rpx;
+    margin-bottom: 20rpx;
+    border-radius: 10rpx;
+  }
+  
+  .title {
+    font-size: 36rpx;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .user-list {
+    background: #fff;
+    border-radius: 10rpx;
+    padding: 20rpx;
+  }
+  
+  .empty {
+    text-align: center;
+    padding: 100rpx 0;
+    color: #999;
+  }
+  
+  .user-card {
+    border-bottom: 1rpx solid #eee;
+    padding: 30rpx 0;
+  }
+  
+  .user-card:last-child {
+    border-bottom: none;
+  }
+  
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20rpx;
+  }
+  
+  .name {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10rpx;
+  }
+  
+  .department, .phone, .time {
+    font-size: 28rpx;
+    color: #666;
+    margin-bottom: 5rpx;
+  }
+  
+  .actions {
+    display: flex;
+    gap: 20rpx;
+  }
+  
+  .approve-btn, .reject-btn {
+    flex: 1;
+    height: 70rpx;
+    line-height: 70rpx;
+    border-radius: 10rpx;
+    font-size: 28rpx;
+    border: none;
+  }
+  
+  .approve-btn {
+    background: #4CAF50;
+    color: #fff;
+  }
+  
+  .reject-btn {
+    background: #f44336;
+    color: #fff;
+  }

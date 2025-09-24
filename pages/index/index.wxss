@@ -1,62 +1,400 @@
 /**index.wxss**/
 page {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-.scrollarea {
-  flex: 1;
-  overflow-y: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+  }
+  
+  .container {
+    position: relative;
+    min-height: 100vh;
+    padding-bottom: 30rpx;
+  }
+  
+  /* 顶部背景装饰 */
+  .header-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 400rpx;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-bottom-left-radius: 50rpx;
+    border-bottom-right-radius: 50rpx;
+    z-index: 0;
+  }
+  
+  /* 用户信息卡片 */
+  .user-card {
+    position: relative;
+    background: white;
+    margin: 60rpx 30rpx 30rpx;
+    border-radius: 24rpx;
+    padding: 40rpx 30rpx;
+    box-shadow: 0 10rpx 40rpx rgba(0, 0, 0, 0.08);
+    z-index: 1;
+  }
+  
+  .user-avatar-section {
+    position: absolute;
+    top: -40rpx;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .avatar-wrapper {
+    width: 80rpx;
+    height: 80rpx;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6rpx 20rpx rgba(102, 126, 234, 0.4);
+  }
+  
+  .avatar {
+    color: white;
+    font-size: 36rpx;
+    font-weight: bold;
+  }
+  
+  .user-info {
+    text-align: center;
+    margin-top: 50rpx;
+    margin-bottom: 30rpx;
+  }
+  
+  .username {
+    font-size: 36rpx;
+    font-weight: bold;
+    color: #2c3e50;
+    display: block;
+    margin-bottom: 16rpx;
+  }
+  
+  .role-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    padding: 8rpx 24rpx;
+    border-radius: 20rpx;
+  }
+  
+  .role-text {
+    color: white;
+    font-size: 24rpx;
+    font-weight: 500;
+  }
+  
+  .today-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 30rpx;
+    border-top: 1rpx solid #f0f0f0;
+  }
+  
+  .date {
+    font-size: 28rpx;
+    color: #8e8e93;
+  }
+  
+  .status-badge {
+    display: flex;
+    align-items: center;
+    padding: 8rpx 20rpx;
+    border-radius: 20rpx;
+    background: #f0f0f0;
+  }
+  
+  .status-badge.checked-in {
+    background: #d4edda;
+  }
+  
+  .status-badge.not-checked {
+    background: #fff3cd;
+  }
+  
+  .status-dot {
+    width: 12rpx;
+    height: 12rpx;
+    border-radius: 50%;
+    background: #28a745;
+    margin-right: 10rpx;
+    animation: pulse 2s infinite;
+  }
+  
+  .status-badge.not-checked .status-dot {
+    background: #ffc107;
+  }
+  
+  .status-text {
+    font-size: 26rpx;
+    color: #495057;
+  }
+  
+  /* 快速操作 */
+  .quick-actions {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 30rpx;
+    margin-bottom: 30rpx;
+  }
+  
+  .action-item {
+    flex: 1;
+    background: white;
+    border-radius: 20rpx;
+    padding: 30rpx 20rpx;
+    margin: 0 10rpx;
+    text-align: center;
+    box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+  }
+  
+  .action-item:active {
+    transform: scale(0.95);
+    box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+  }
+  
+  .action-icon-wrapper {
+    width: 80rpx;
+    height: 80rpx;
+    margin: 0 auto 16rpx;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .action-icon-wrapper.checkin {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .action-icon-wrapper.history {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+  
+  .action-icon-wrapper.leave {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  }
+  
+  .iconfont {
+    font-size: 40rpx;
+  }
+  
+  .action-text {
+    display: block;
+    font-size: 28rpx;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8rpx;
+  }
+  
+  .action-desc {
+    display: block;
+    font-size: 22rpx;
+    color: #8e8e93;
+  }
+  
+  /* 今日打卡记录 */
+  .today-records {
+    background: white;
+    margin: 0 30rpx 30rpx;
+    border-radius: 24rpx;
+    padding: 30rpx;
+    box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30rpx;
+  }
+  
+  .section-title {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #2c3e50;
+  }
+  
+  .section-more {
+    font-size: 26rpx;
+    color: #667eea;
+  }
+  
+  .records-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20rpx;
+  }
+  
+  .record-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20rpx;
+    background: #f8f9fa;
+    border-radius: 16rpx;
+    transition: all 0.3s ease;
+  }
+  
+  .record-item:active {
+    background: #e9ecef;
+  }
+  
+  .record-left {
+    display: flex;
+    align-items: center;
+    gap: 20rpx;
+  }
+  
+  .record-icon {
+    width: 60rpx;
+    height: 60rpx;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24rpx;
+    font-weight: bold;
+    color: white;
+  }
+  
+  .record-icon.in {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .record-icon.out {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+  
+  .record-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8rpx;
+  }
+  
+  .record-type-text {
+    font-size: 28rpx;
+    font-weight: 500;
+    color: #2c3e50;
+  }
+  
+  .record-time {
+    font-size: 24rpx;
+    color: #8e8e93;
+  }
+  
+  .record-status-badge {
+    padding: 8rpx 16rpx;
+    border-radius: 12rpx;
+    font-size: 24rpx;
+  }
+  
+  .record-status-badge.normal {
+    background: #d4edda;
+    color: #155724;
+  }
+  
+  .record-status-badge.late {
+    background: #fff3cd;
+    color: #856404;
+  }
+  
+  .record-status-badge.early {
+    background: #ffeaa7;
+    color: #d68910;
+  }
+  
+  /* 无记录提示 */
+  .no-records {
+    text-align: center;
+    padding: 60rpx 0;
+  }
+  
+  .no-records-icon {
+    font-size: 80rpx;
+    margin-bottom: 20rpx;
+  }
+  
+  .no-records-text {
+    display: block;
+    font-size: 30rpx;
+    color: #6c757d;
+    margin-bottom: 10rpx;
+  }
+  
+  .no-records-tips {
+    display: block;
+    font-size: 26rpx;
+    color: #adb5bd;
+  }
+  
+  /* 底部装饰 */
+  .bottom-decoration {
+    height: 100rpx;
+    background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.1) 100%);
+  }
+  
+  /* 动画效果 */
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10rpx rgba(40, 167, 69, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+  }
+  
+  /* 页面进入动画 */
+.user-card,
+.action-item,
+.today-records {
+  animation: slideUp 0.5s ease-out;
 }
 
-.userinfo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: #aaa;
-  width: 80%;
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.userinfo-avatar {
-  overflow: hidden;
-  width: 128rpx;
-  height: 128rpx;
-  margin: 20rpx;
-  border-radius: 50%;
+/* 延迟动画效果 */
+.action-item:nth-child(1) {
+  animation-delay: 0.1s;
+  position: relative; /* 添加 position */
+  z-index: 2; /* 确保该元素位于前面 */
 }
 
-.usermotto {
-  margin-top: 200px;
+.action-item:nth-child(2) {
+  animation-delay: 0.2s;
+  position: relative; /* 添加 position */
+  z-index: 2; /* 确保该元素位于前面 */
 }
 
-.avatar-wrapper {
-  padding: 0;
-  width: 56px !important;
-  border-radius: 8px;
-  margin-top: 40px;
-  margin-bottom: 40px;
+.action-item:nth-child(3) {
+  animation-delay: 0.3s;
+  position: relative; /* 添加 position */
+  z-index: 2; /* 确保该元素位于前面 */
 }
 
-.avatar {
-  display: block;
-  width: 56px;
-  height: 56px;
+.today-records {
+  animation-delay: 0.4s;
 }
 
-.nickname-wrapper {
-  display: flex;
-  width: 100%;
-  padding: 16px;
-  box-sizing: border-box;
-  border-top: .5px solid rgba(0, 0, 0, 0.1);
-  border-bottom: .5px solid rgba(0, 0, 0, 0.1);
-  color: black;
+.action-icon-wrapper.project-in {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%); /* 绿色系：入场 */
 }
 
-.nickname-label {
-  width: 105px;
-}
-
-.nickname-input {
-  flex: 1;
+.action-icon-wrapper.project-out {
+  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); /* 橙红系：离场 */
 }

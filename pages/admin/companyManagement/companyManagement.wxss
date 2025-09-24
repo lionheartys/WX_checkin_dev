@@ -1,0 +1,269 @@
+/* pages/admin/companyManagement/companyManagement.wxss */
+.company-management {
+    min-height: 100vh;
+    background-color: #f5f5f5;
+    padding: 20rpx;
+  }
+  
+  /* 搜索栏 */
+  .search-bar {
+    background: white;
+    padding: 20rpx;
+    border-radius: 10rpx;
+    margin-bottom: 20rpx;
+  }
+  
+  .search-input-wrapper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20rpx;
+  }
+  
+  .search-input {
+    flex: 1;
+    height: 70rpx;
+    padding: 0 20rpx;
+    border: 1px solid #ddd;
+    border-radius: 8rpx;
+    font-size: 28rpx;
+  }
+  
+  .search-btn {
+    margin-left: 20rpx;
+  }
+  
+  .filter-wrapper {
+    display: flex;
+    align-items: center;
+  }
+  
+  .filter-select {
+    padding: 15rpx 20rpx;
+    background: #f8f8f8;
+    border-radius: 8rpx;
+    font-size: 28rpx;
+    color: #333;
+  }
+  
+  /* 操作栏 */
+  .action-bar {
+    display: flex;
+    gap: 20rpx;
+    margin-bottom: 20rpx;
+    flex-wrap: wrap;
+  }
+  
+  .action-btn {
+    flex: none;
+  }
+  
+  /* 公司列表 */
+  .company-list {
+    background: white;
+    border-radius: 10rpx;
+    padding: 20rpx;
+  }
+  
+  .empty-tips {
+    text-align: center;
+    color: #999;
+    padding: 60rpx 0;
+    font-size: 28rpx;
+  }
+  
+  .company-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 20rpx 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .company-item:last-child {
+    border-bottom: none;
+  }
+  
+  .company-checkbox {
+    margin-right: 20rpx;
+    padding-top: 10rpx;
+  }
+  
+  .company-info {
+    flex: 1;
+    margin-right: 20rpx;
+  }
+  
+  .company-name {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10rpx;
+  }
+  
+  .company-meta {
+    display: flex;
+    align-items: center;
+    gap: 20rpx;
+    margin-bottom: 10rpx;
+  }
+  
+  .meta-item {
+    font-size: 26rpx;
+    color: #666;
+  }
+  
+  .validity-expired {
+    color: #ff4444;
+    font-weight: bold;
+  }
+  
+  .validity-expiring {
+    color: #ff9800;
+    font-weight: bold;
+  }
+  
+  .validity-valid {
+    color: #4caf50;
+  }
+  
+  .company-time {
+    font-size: 24rpx;
+    color: #999;
+  }
+  
+  .company-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10rpx;
+    align-items: flex-end;
+  }
+  
+  .status-badge {
+    padding: 6rpx 16rpx;
+    border-radius: 6rpx;
+    font-size: 24rpx;
+    margin-bottom: 10rpx;
+  }
+  
+  .status-badge.active {
+    background: #e8f5e9;
+    color: #4caf50;
+  }
+  
+  .status-badge.inactive {
+    background: #ffebee;
+    color: #f44336;
+  }
+  
+  /* 分页 */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30rpx 0;
+    gap: 30rpx;
+  }
+  
+  .page-info {
+    font-size: 28rpx;
+    color: #666;
+  }
+  
+  /* 对话框 */
+  .dialog-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+  
+  .dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 600rpx;
+    background: white;
+    border-radius: 10rpx;
+    z-index: 1000;
+  }
+  
+  .dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20rpx 30rpx;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 32rpx;
+    font-weight: bold;
+  }
+  
+  .dialog-close {
+    font-size: 40rpx;
+    color: #999;
+    padding: 0 10rpx;
+  }
+  
+  .dialog-body {
+    padding: 30rpx;
+  }
+  
+  .form-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30rpx;
+  }
+  
+  .form-item:last-child {
+    margin-bottom: 0;
+  }
+  
+  .form-label {
+    width: 150rpx;
+    font-size: 28rpx;
+    color: #333;
+  }
+  
+  .form-input {
+    flex: 1;
+    height: 70rpx;
+    padding: 0 20rpx;
+    border: 1px solid #ddd;
+    border-radius: 8rpx;
+    font-size: 28rpx;
+  }
+  
+  .picker-value {
+    line-height: 70rpx;
+    color: #333;
+    background: #f8f8f8;
+  }
+  
+  .switch-label {
+    margin-left: 20rpx;
+    font-size: 28rpx;
+    color: #666;
+  }
+  
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 20rpx;
+    padding: 20rpx 30rpx;
+    border-top: 1px solid #f0f0f0;
+  }
+  
+  /* 响应式调整 */
+  @media (max-width: 375px) {
+    .company-actions {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    
+    .company-actions button {
+      font-size: 24rpx;
+    }
+  }
