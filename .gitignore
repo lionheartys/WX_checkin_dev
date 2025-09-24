@@ -1,2 +1,10 @@
 show_features.js
-*.sh
+full_test.sh
+test_basic.sh
+test_batch_users.sh
+test_checkin.sh
+test_statistics.sh
+
+logs/
+.run/
+.vscode/
