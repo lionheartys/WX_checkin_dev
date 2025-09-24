@@ -16,6 +16,15 @@ router.post('/create', authMiddleware, requireRole(['admin']), [
 // 转移项目负责人
 router.put('/transfer/:id', authMiddleware, projectController.transfer);
 
+//拉取项目列表
+router.post('/get-project-list', /*auth,*/ projectController.getProjectList);
+
+// 拉取项目下所属地点列表
+router.post('/get-project-locations-list', projectController.getProjectLocations);
+
+// 申请项目入场/离场
+router.post('/project-apply', projectController.applyProjectEntry);
+
 // 测试接口
 router.get('/test', (req, res) => {
   res.json({ code: 200, message: 'Project route working' });
