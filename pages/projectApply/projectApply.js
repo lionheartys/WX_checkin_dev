@@ -175,6 +175,7 @@ Page({
       wx.showToast({ title: '请先完善表单', icon: 'none' });
       return;
     }
+    
     const {
       userId, projects, projectIndex,
       locations, locationIndex,
@@ -196,21 +197,31 @@ Page({
   
     api.projectApplySubmit(payload)
       .then((res) => {
-        if (res.statusCode === 200 || res.statusCode === 201) {
+        console.log('返回状态码为', res.code);
+  
+        // 检查后端返回的 code 来判断是否成功
+        if (res.code === 200 || res.code === 201) {
           wx.showToast({ title: '提交成功', icon: 'success' });
           setTimeout(() => wx.navigateBack({ delta: 1 }), 800);
           return;
         }
-
-        const code = res.statusCode;
-        let msg = (res.data && (res.data.message || res.data.error)) || '提交失败';
-        wx.showToast({ title: msg, icon: 'none' });
+  
+        // 处理冲突情况 (409 错误码)
+        else if (res.code === 409) {
+          wx.showToast({ title: '该用户已有同类型申请处于审批状态，请勿重复提交', icon: 'none' });
+        } else {
+          // 如果返回的 code 不是 200 或 409，获取详细的错误信息
+          let msg = (res.message || '提交失败');
+          wx.showToast({ title: msg, icon: 'none' });
+        }
       })
-      .catch(() => {
-        wx.showToast({ title: '申请已提交', icon: 'none' });
+      .catch((error) => {
+        console.error('请求失败:', error);
+        wx.showToast({ title: '申请提交失败', icon: 'none' });
       })
       .finally(() => {
         this.setData({ submitting: false });
       });
-  }
-});
+  },
+
+})

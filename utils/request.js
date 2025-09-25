@@ -72,11 +72,11 @@ const api = {
   
   // ========== 打卡功能（普通用户） ==========
   // 获取打卡配置
-  getCheckinConfig: (projectId = 1) => {
+  getCheckinConfig: async function(locationId) {
     return request({
       url: '/checkin/config',
-      method: 'GET',
-      data: { projectId }
+      method: 'POST',
+      data: { locationId: locationId }
     })
   },
   
@@ -481,6 +481,24 @@ adminGetProjectsManage: (params = {}) => {
       url: '/project/project-apply',
       method: 'POST',
       data
+    })
+  },
+   
+  //获取用户可选项目
+  userProjectAvailableList: (userId) => {
+    return request({
+      url: '/project/user-get-available-projects',
+      method: 'POST',
+      data: { userId: userId }
+    })
+  },
+
+  //获取项目下的可选打卡地
+  getProjectCheckinLocations: (projectId) => {
+    return request({
+      url: '/location/user-get-available-locations',
+      method: 'POST',
+      data: { projectId: projectId }
     })
   }
 }

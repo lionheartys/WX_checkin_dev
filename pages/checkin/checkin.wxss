@@ -302,14 +302,14 @@
   }
   
   .form-item {
-    margin-bottom: 25rpx;
+    display: flex;
+    justify-content: space-between;
+    padding: 10rpx 0;
   }
   
   .form-label {
-    display: block;
-    font-size: 28rpx;
     color: #666;
-    margin-bottom: 10rpx;
+    font-size: 28rpx;
   }
   
   .picker {
@@ -356,4 +356,12 @@
   .dialog-btn.confirm {
     background: #667eea;
     color: white;
+  }
+
+  .project-selection {
+    background: white;
+    padding: 25rpx;
+    border-radius: 15rpx;
+    margin-bottom: 20rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
   }
