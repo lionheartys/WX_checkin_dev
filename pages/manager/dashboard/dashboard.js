@@ -8,7 +8,7 @@ Page({
       todayCheckins: 0,       // 今日打卡人数
       abnormalToday: 0,       // 今日异常数
       pendingMakeup: 0,       // 待审核补卡
-      pendingLeave: 0,        // 待审核请假
+      //pendingLeave: 0,        // 待审核请假
       pendingEntry: 0         // 待审核入场申请
     }
   },
@@ -19,14 +19,14 @@ Page({
     })
     this.getStatistics()
     this.getPendingMakeupCount()
-    this.getPendingLeaveCount()
+    //this.getPendingLeaveCount()
     this.getPendingEntryCount()
   },
 
   onShow() {
     this.getStatistics()
     this.getPendingMakeupCount()
-    this.getPendingLeaveCount()
+    //this.getPendingLeaveCount()
     this.getPendingEntryCount()
   },
 
@@ -64,7 +64,7 @@ Page({
     }
   },
 
-  // 获取待审核请假申请数
+  //获取待审核请假申请数
   async getPendingLeaveCount() {
     try {
       const res = await api.request({
@@ -113,11 +113,11 @@ Page({
   },
 
   // 跳转到请假审核页面
-  goToLeaveAudit() {
-    wx.navigateTo({
-      url: '/pages/manager/leaveAudit/leaveAudit'
-    })
-  },
+  //goToLeaveAudit() {
+    //wx.navigateTo({
+      //url: '/pages/manager/leaveAudit/leaveAudit'
+    //})
+  //},
 
   // 跳转到打卡地管理页面
   goToLocationManagement() {

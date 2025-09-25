@@ -59,7 +59,7 @@
           "pagePath": "pages/profile/profile",
           "text": "我的",
           "iconPath": "images/profile.png", 
-          "selectedIconPath": "images/profile.png"
+          "selectedIconPath": "images/profile-active.png"
         }
       ]
     },
