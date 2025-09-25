@@ -1,0 +1,318 @@
+<!--pages/admin/locationManagement/locationManagement.wxml-->
+<view class="location-page">
+  <!-- 顶部操作栏 -->
+  <view class="header">
+    <text class="title">打卡地管理</text>
+    <button class="add-btn" size="mini" bindtap="showAddLocation">
+      + 添加打卡地
+    </button>
+  </view>
+
+  <!-- 加载提示 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 打卡地列表 -->
+  <view wx:elif="{{locations.length > 0}}" class="location-list">
+    <view class="location-card" wx:for="{{locations}}" wx:key="id"  wx:for-index="index">
+      <!-- 卡片头部 -->
+      <view class="card-header">
+        <view class="location-info">
+          <text class="location-name">{{item.location_name}}</text>
+          <text class="project-name">{{item.project_name}}</text>
+        </view>
+        <view class="status-badge {{item.status === 1 ? 'active' : 'inactive'}}">
+          {{item.statusText}}
+        </view>
+      </view>
+
+      <!-- 卡片内容 -->
+      <view class="card-content">
+        <view class="info-grid">
+          <view class="info-item">
+            <text class="label">工作时间</text>
+            <text class="value">{{item.work_start_time}} - {{item.work_end_time}}</text>
+          </view>
+          <view class="info-item">
+            <text class="label">打卡范围</text>
+            <text class="value">{{item.checkin_range}}米</text>
+          </view>
+          <view class="info-item">
+            <text class="label">异常阈值</text>
+            <text class="value">{{item.abnormal_threshold}}分钟</text>
+          </view>
+          <view class="info-item">
+            <text class="label">坐标</text>
+            <text class="value coordinate">{{item.longitude}}, {{item.latitude}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="card-actions">
+        <button 
+          class="action-btn view" 
+          size="mini"
+          data-index="{{index}}"
+          bindtap="viewMap"
+        >
+          查看地图
+        </button>
+        <button 
+          class="action-btn edit" 
+          size="mini"
+          data-index="{{index}}"
+          bindtap="showEditLocation"
+        >
+          编辑
+        </button>
+        <button 
+          class="action-btn toggle {{item.status === 1 ? 'disable' : 'enable'}}" 
+          size="mini"
+          data-index="{{index}}"
+          bindtap="toggleStatus"
+        >
+          {{item.status === 1 ? '禁用' : '启用'}}
+        </button>
+        <button 
+          class="action-btn delete" 
+          size="mini"
+          data-index="{{index}}"
+          bindtap="deleteLocation"
+        >
+          删除
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:else class="empty-container">
+    <view class="empty-icon">📍</view>
+    <text class="empty-text">暂无打卡地</text>
+    <button class="empty-btn" bindtap="showAddLocation">添加第一个打卡地</button>
+  </view>
+
+  <!-- 添加对话框 -->
+  <view class="modal-mask" wx:if="{{showAddDialog}}" bindtap="hideAddDialog"></view>
+  <view class="modal-dialog" wx:if="{{showAddDialog}}">
+    <view class="modal-header">
+      <text class="modal-title">添加打卡地</text>
+      <text class="modal-close" bindtap="hideAddDialog">×</text>
+    </view>
+    
+    <scroll-view class="modal-body" scroll-y>
+      <!-- 项目选择 -->
+      <view class="form-item">
+        <text class="form-label">所属项目</text>
+        <picker 
+          mode="selector" 
+          range="{{projects}}" 
+          range-key="project_name"
+          value="{{projectIndex}}"
+          bindchange="onProjectChange"
+        >
+          <view class="picker-value">
+            {{projects[projectIndex].project_name || '请选择'}}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 地点名称 -->
+      <view class="form-item">
+        <text class="form-label">地点名称</text>
+        <input 
+          class="form-input" 
+          placeholder="请输入地点名称"
+          value="{{formData.location_name}}"
+          data-field="location_name"
+          bindinput="onInput"
+        />
+      </view>
+
+      <!-- 经纬度 -->
+      <view class="form-item">
+        <text class="form-label">经纬度</text>
+        <view class="location-input">
+          <input 
+            class="form-input coordinate-input" 
+            placeholder="经度"
+            value="{{formData.longitude}}"
+            data-field="longitude"
+            bindinput="onInput"
+          />
+          <input 
+            class="form-input coordinate-input" 
+            placeholder="纬度"
+            value="{{formData.latitude}}"
+            data-field="latitude"
+            bindinput="onInput"
+          />
+          <button class="location-btn" size="mini" bindtap="getCurrentLocation">
+            获取当前位置
+          </button>
+        </view>
+      </view>
+
+      <!-- 工作时间 -->
+      <view class="form-item">
+        <text class="form-label">上班时间</text>
+        <picker 
+          mode="time" 
+          value="{{formData.work_start_time}}"
+          data-field="work_start_time"
+          bindchange="onTimeChange"
+        >
+          <view class="picker-value">{{formData.work_start_time}}</view>
+        </picker>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">下班时间</text>
+        <picker 
+          mode="time" 
+          value="{{formData.work_end_time}}"
+          data-field="work_end_time"
+          bindchange="onTimeChange"
+        >
+          <view class="picker-value">{{formData.work_end_time}}</view>
+        </picker>
+      </view>
+
+      <!-- 打卡范围 -->
+      <view class="form-item">
+        <text class="form-label">打卡范围（米）</text>
+        <input 
+          class="form-input" 
+          type="number"
+          placeholder="默认200米"
+          value="{{formData.checkin_range}}"
+          data-field="checkin_range"
+          bindinput="onInput"
+        />
+      </view>
+
+      <!-- 异常阈值 -->
+      <view class="form-item">
+        <text class="form-label">异常阈值（分钟）</text>
+        <input 
+          class="form-input" 
+          type="number"
+          placeholder="默认30分钟"
+          value="{{formData.abnormal_threshold}}"
+          data-field="abnormal_threshold"
+          bindinput="onInput"
+        />
+      </view>
+    </scroll-view>
+
+    <view class="modal-footer">
+      <button class="modal-btn cancel" bindtap="hideAddDialog">取消</button>
+      <button class="modal-btn confirm" bindtap="submitAdd">确定添加</button>
+    </view>
+  </view>
+
+  <!-- 编辑对话框 -->
+  <view class="modal-mask" wx:if="{{showEditDialog}}" bindtap="hideEditDialog"></view>
+  <view class="modal-dialog" wx:if="{{showEditDialog}}">
+    <view class="modal-header">
+      <text class="modal-title">编辑打卡地</text>
+      <text class="modal-close" bindtap="hideEditDialog">×</text>
+    </view>
+    
+    <scroll-view class="modal-body" scroll-y>
+      <!-- 地点名称 -->
+      <view class="form-item">
+        <text class="form-label">地点名称</text>
+        <input 
+          class="form-input" 
+          placeholder="请输入地点名称"
+          value="{{formData.location_name}}"
+          data-field="location_name"
+          bindinput="onInput"
+        />
+      </view>
+
+      <!-- 经纬度 -->
+      <view class="form-item">
+        <text class="form-label">经纬度</text>
+        <view class="location-input">
+          <input 
+            class="form-input coordinate-input" 
+            placeholder="经度"
+            value="{{formData.longitude}}"
+            data-field="longitude"
+            bindinput="onInput"
+          />
+          <input 
+            class="form-input coordinate-input" 
+            placeholder="纬度"
+            value="{{formData.latitude}}"
+            data-field="latitude"
+            bindinput="onInput"
+          />
+          <button class="location-btn" size="mini" bindtap="getCurrentLocation">
+            获取当前位置
+          </button>
+        </view>
+      </view>
+
+      <!-- 工作时间 -->
+      <view class="form-item">
+        <text class="form-label">上班时间</text>
+        <picker 
+          mode="time" 
+          value="{{formData.work_start_time}}"
+          data-field="work_start_time"
+          bindchange="onTimeChange"
+        >
+          <view class="picker-value">{{formData.work_start_time}}</view>
+        </picker>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">下班时间</text>
+        <picker 
+          mode="time" 
+          value="{{formData.work_end_time}}"
+          data-field="work_end_time"
+          bindchange="onTimeChange"
+        >
+          <view class="picker-value">{{formData.work_end_time}}</view>
+        </picker>
+      </view>
+
+      <!-- 打卡范围 -->
+      <view class="form-item">
+        <text class="form-label">打卡范围（米）</text>
+        <input 
+          class="form-input" 
+          type="number"
+          placeholder="默认200米"
+          value="{{formData.checkin_range}}"
+          data-field="checkin_range"
+          bindinput="onInput"
+        />
+      </view>
+
+      <!-- 异常阈值 -->
+      <view class="form-item">
+        <text class="form-label">异常阈值（分钟）</text>
+        <input 
+          class="form-input" 
+          type="number"
+          placeholder="默认30分钟"
+          value="{{formData.abnormal_threshold}}"
+          data-field="abnormal_threshold"
+          bindinput="onInput"
+        />
+      </view>
+    </scroll-view>
+
+    <view class="modal-footer">
+      <button class="modal-btn cancel" bindtap="hideEditDialog">取消</button>
+      <button class="modal-btn confirm" bindtap="submitEdit">保存修改</button>
+    </view>
+  </view>
+</view>

@@ -86,6 +86,10 @@ Page({
       wx.reLaunch({
         url: '/pages/admin/dashboard/dashboard'
       })
+    }else if (role === 'project_manager') {
+      wx.reLaunch({
+        url: '/pages/manager/dashboard/dashboard'
+      })
     } else {
       wx.reLaunch({
         url: '/pages/index/index'

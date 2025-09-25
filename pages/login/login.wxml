@@ -1,6 +1,6 @@
 <view class="container">
   <view class="header">
-    <image class="logo" src="../../images/logo.jpg"></image>
+    <image class="logo" src="../../images/logo.png"></image>
     <text class="title">企业打卡系统</text>
   </view>
 

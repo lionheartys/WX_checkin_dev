@@ -6,6 +6,7 @@ Page({
     applications: [],
     filteredApplications: [],
     currentFilter: 'all',
+    currentFilterIndex: 0, // 添加索引用于picker
     filterOptions: [
       { value: 'all', label: '全部' },
       { value: 'pending', label: '待审批' },
@@ -120,10 +121,11 @@ Page({
 
   // 切换筛选
   onFilterChange(e) {
-    const filter = e.detail.value
-    const filterValue = this.data.filterOptions[filter].value
+    const filterIndex = e.detail.value
+    const filterValue = this.data.filterOptions[filterIndex].value
     this.setData({
       currentFilter: filterValue,
+      currentFilterIndex: filterIndex,
       expandedUsers: {},
       expandedProjects: {}
     })
@@ -179,7 +181,7 @@ Page({
       
       if (res.code === 200) {
         wx.showToast({
-          title: currentApproval.action === 'approved' ? '已批准' : '已拒绝',
+          title: res.message || (currentApproval.action === 'approved' ? '已批准' : '已拒绝'),
           icon: 'success'
         })
         
@@ -239,7 +241,12 @@ Page({
 
   // 获取申请类型文本
   getEntryTypeText(type) {
-    return type === 'entry' ? '入场' : '离场'
+    return type === 'entry' ? '入场申请' : '离场申请'
+  },
+
+  // 获取申请类型颜色
+  getEntryTypeColor(type) {
+    return type === 'entry' ? '#2196f3' : '#ff5722'
   },
 
   // 下拉刷新
