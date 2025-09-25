@@ -88,7 +88,7 @@ CREATE TABLE project_entries (
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
     FOREIGN KEY (location_id) REFERENCES checkin_locations(id) ON DELETE CASCADE,
     FOREIGN KEY (approver_id) REFERENCES users(id) ON DELETE SET NULL,
-    UNIQUE KEY uk_user_location (user_id, location_id, entry_type),
+   -- UNIQUE KEY uk_user_location (user_id, location_id, entry_type),
     INDEX idx_user (user_id),
     INDEX idx_project (project_id),
     INDEX idx_location (location_id),

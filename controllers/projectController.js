@@ -313,7 +313,7 @@ exports.applyProjectEntry = async (req, res) => {
         apply_reason || null,
         expect_leavetime || null    // 'YYYY-MM-DD HH:mm:ss'，与列名一致
       ];
-      const [result] = await conn.query(sql, params);
+      const [result] = await pool.query(sql, params);
 
       res.status(200).json({
         code: 201,
@@ -323,6 +323,7 @@ exports.applyProjectEntry = async (req, res) => {
       await conn.commit();
 
     } catch (e) {
+      console.log('applyProjectEntry inner error:', e);
       if (conn) await conn.rollback();
       if (e.code === 'ER_DUP_ENTRY') {
         return res.status(200).json({ code: 409, message: '已存在相同类型的申请' });

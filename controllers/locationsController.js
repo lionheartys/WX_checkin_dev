@@ -15,8 +15,8 @@ exports.getAvailableProjectList = async (req, res) => {
 
     try {
         // 当前时间
-        // const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
-        const currentTime = moment();
+        // const currentTime = moment().fo((rmat('YYYY-MM-DD HH:mm:ss');
+        const currentTime = moment().local();
 
         // 1. 查找当前用户的已批准入场申请
         const entryQuery = `
@@ -56,15 +56,21 @@ exports.getAvailableProjectList = async (req, res) => {
         // 4. 检查离场申请的预计离场时间是否已经超时，超时则将入场申请的状态改为 'expired'
         for (const exit of exitResults) {
             const exitExpectLeaveTime = moment(exit.expect_leavetime);
+
+            // console.log('currentTime:', currentTime.toISOString());  // 打印ISO格式的时间
+            // console.log('exitExpectLeaveTime:', exitExpectLeaveTime.toISOString());  // 打印ISO格式的时间
+            // console.log('currentTime timestamp:', currentTime.valueOf());  // 打印时间戳
+            // console.log('exitExpectLeaveTime timestamp:', exitExpectLeaveTime.valueOf());
+
             if (currentTime > exitExpectLeaveTime) {
                 const entryId = exit.project_id; // 获取与之对应的入场申请的项目ID
                 const locationId = exit.location_id;
                 const updateEntryStatusQuery = `
                   UPDATE project_entries
                   SET status = 'expired'
-                  WHERE project_id = ? AND location_id = ? AND entry_type = 'entry' AND status = 'approved'
+                  WHERE user_id = ? AND project_id = ? AND location_id = ? AND entry_type = 'entry' AND status = 'approved'
                 `;
-                await pool.query(updateEntryStatusQuery, [entryId, locationId]);  // 使用参数化查询
+                await pool.query(updateEntryStatusQuery, [userId, entryId, locationId]);  // 使用参数化查询
             }
         }
 
