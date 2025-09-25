@@ -274,7 +274,7 @@ router.get('/statistics', async (req, res) => {
     const projectIds = projects.map(p => p.id);
 
     // 2. 今日打卡人数
-    const [todayCheckins] = await pool.query(
+    const [todayCheckinsRows] = await pool.query(
       `SELECT COUNT(DISTINCT cr.user_id) as count
        FROM checkin_records cr
        INNER JOIN checkin_locations cl ON cr.location_id = cl.id
@@ -283,7 +283,7 @@ router.get('/statistics', async (req, res) => {
     );
 
     // 3. 今日异常打卡数
-    const [abnormalToday] = await pool.query(
+    const [abnormalTodayRows] = await pool.query(
       `SELECT COUNT(*) as count
        FROM checkin_records cr
        INNER JOIN checkin_locations cl ON cr.location_id = cl.id
@@ -293,7 +293,7 @@ router.get('/statistics', async (req, res) => {
     );
 
     // 4. 待审核补卡
-    const [pendingMakeup] = await pool.query(
+    const [pendingMakeupRows] = await pool.query(
       `SELECT COUNT(*) as count
        FROM makeup_applications ma
        INNER JOIN checkin_locations cl ON ma.location_id = cl.id
@@ -302,7 +302,7 @@ router.get('/statistics', async (req, res) => {
     );
 
     // 5. 待审核请假
-    const [pendingLeave] = await pool.query(
+    const [pendingLeaveRows] = await pool.query(
       `SELECT COUNT(*) as count
        FROM leave_applications la
        INNER JOIN project_entries pe ON la.user_id = pe.user_id
@@ -311,7 +311,7 @@ router.get('/statistics', async (req, res) => {
     );
 
     // 6. 待审批入场申请
-    const [pendingEntry] = await pool.query(
+    const [pendingEntryRows] = await pool.query(
       `SELECT COUNT(*) as count
        FROM project_entries pe
        WHERE pe.project_id IN (?) AND pe.status = 'pending'`,
@@ -322,11 +322,11 @@ router.get('/statistics', async (req, res) => {
       code: 200,
       message: '获取成功',
       data: {
-        todayCheckins: todayCheckins[0].count,
-        abnormalToday: abnormalToday[0].count,
-        pendingMakeup: pendingMakeup[0].count,
-        pendingLeave: pendingLeave[0].count,
-        pendingEntry: pendingEntry[0].count
+        todayCheckins: todayCheckinsRows?.[0]?.count || 0,
+        abnormalToday: abnormalTodayRows?.[0]?.count || 0,
+        pendingMakeup: pendingMakeupRows?.[0]?.count || 0,
+        pendingLeave: pendingLeaveRows?.[0]?.count || 0,
+        pendingEntry: pendingEntryRows?.[0]?.count || 0
       }
     });
   } catch (error) {
