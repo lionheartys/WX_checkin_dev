@@ -31,20 +31,27 @@ router.post('/makeup', authMiddleware, [
 ], checkinController.applyMakeup);
 
 // 新增：获取打卡配置接口
-router.get('/config', async (req, res) => {
+router.post('/config', async (req, res) => {
   const pool = require('../config/database');
   try {
-    const { projectId } = req.query;
-    
+    const { locationId } = req.body.locationId;
+
+    if (!locationId) {
+      return res.status(400).json({
+        code: 400,
+        message: '打卡地点ID不能为空'
+      });
+    }
+
     // 根据项目ID获取最新的打卡配置
     const [rows] = await pool.query(
       `SELECT * FROM checkin_locations 
-       WHERE project_id = ? AND status = 1 
+       WHERE id = ? AND status = 1 
        ORDER BY id DESC 
        LIMIT 1`,
-      [projectId || 1]
+      [locationId]
     );
-    
+
     if (rows.length > 0) {
       res.json({
         code: 200,
@@ -58,8 +65,8 @@ router.get('/config', async (req, res) => {
     }
   } catch (error) {
     console.error('获取打卡配置失败:', error);
-    res.status(500).json({ 
-      code: 500, 
+    res.status(500).json({
+      code: 500,
       message: '获取打卡配置失败'
     });
   }
@@ -68,12 +75,12 @@ router.get('/config', async (req, res) => {
 router.post('/simple-clock', async (req, res) => {
   const pool = require('../config/database');
   const connection = await pool.getConnection();
-  
+
   try {
     const { user_id, type, longitude, latitude, remark } = req.body;
-    
+
     await connection.beginTransaction();
-    
+
     // 获取默认打卡地点及配置
     const [locations] = await connection.query(
       `SELECT * FROM checkin_locations 
@@ -81,7 +88,7 @@ router.post('/simple-clock', async (req, res) => {
        ORDER BY id DESC 
        LIMIT 1`
     );
-    
+
     if (locations.length === 0) {
       await connection.rollback();
       return res.status(404).json({
@@ -89,14 +96,14 @@ router.post('/simple-clock', async (req, res) => {
         message: '未找到有效的打卡地点配置'
       });
     }
-    
+
     const location = locations[0];
     const locationId = location.id;
-    
+
     // 使用中国时区的当前时间
     const now = moment().tz('Asia/Shanghai');
     const today = now.format('YYYY-MM-DD');
-    
+
     // 检查今日是否已打卡
     const [todayRecords] = await connection.query(
       `SELECT * FROM checkin_records 
@@ -104,7 +111,7 @@ router.post('/simple-clock', async (req, res) => {
        AND DATE(checkin_time) = ?`,
       [user_id, locationId, type || 'in', today]
     );
-    
+
     if (todayRecords.length > 0) {
       await connection.rollback();
       return res.status(400).json({
@@ -113,35 +120,35 @@ router.post('/simple-clock', async (req, res) => {
         data: null
       });
     }
-    
+
     // 判断打卡状态（迟到、早退、正常）
     const checkinTime = now.format('YYYY-MM-DD HH:mm:ss');
     let checkinStatus = 'normal';
     let abnormalReason = null;
-    
+
     // 调试日志（可选，正式环境可以删除）
     console.log('当前北京时间:', now.format('YYYY-MM-DD HH:mm:ss'));
     console.log('打卡类型:', type);
-    
+
     if (type === 'in' || !type) {  // 上班打卡
       const workStartTime = location.work_start_time || '09:00:00';
       const abnormalThreshold = parseInt(location.abnormal_threshold) || 30;
-      
+
       // 构建今天的上班时间（使用中国时区）
       const workStart = moment.tz(`${today} ${workStartTime}`, 'YYYY-MM-DD HH:mm:ss', 'Asia/Shanghai');
       const lateThreshold = workStart.clone().add(abnormalThreshold, 'minutes');
-      
+
       // 调试日志
       console.log('上班时间:', workStart.format('YYYY-MM-DD HH:mm:ss'));
       console.log('迟到阈值:', lateThreshold.format('YYYY-MM-DD HH:mm:ss'));
       console.log('是否迟到:', now.isAfter(lateThreshold));
-      
+
       // 判断是否迟到
       if (now.isAfter(lateThreshold)) {
         checkinStatus = 'late';
         const lateMinutes = now.diff(workStart, 'minutes');
         abnormalReason = `迟到${lateMinutes}分钟`;
-        
+
         // 如果有备注，添加到异常原因中
         if (remark) {
           abnormalReason += `；备注：${remark}`;
@@ -150,32 +157,32 @@ router.post('/simple-clock', async (req, res) => {
     } else if (type === 'out') {  // 下班打卡
       const workEndTime = location.work_end_time || '18:00:00';
       const abnormalThreshold = parseInt(location.abnormal_threshold) || 30;
-      
+
       // 构建今天的下班时间（使用中国时区）
       const workEnd = moment.tz(`${today} ${workEndTime}`, 'YYYY-MM-DD HH:mm:ss', 'Asia/Shanghai');
       const earlyThreshold = workEnd.clone().subtract(abnormalThreshold, 'minutes');
-      
+
       // 调试日志
       console.log('下班时间:', workEnd.format('YYYY-MM-DD HH:mm:ss'));
       console.log('早退阈值:', earlyThreshold.format('YYYY-MM-DD HH:mm:ss'));
       console.log('是否早退:', now.isBefore(earlyThreshold));
-      
+
       // 判断是否早退
       if (now.isBefore(earlyThreshold)) {
         checkinStatus = 'early';
         const earlyMinutes = workEnd.diff(now, 'minutes');
         abnormalReason = `早退${earlyMinutes}分钟`;
-        
+
         // 如果有备注，添加到异常原因中
         if (remark) {
           abnormalReason += `；备注：${remark}`;
         }
       }
     }
-    
+
     console.log('最终打卡状态:', checkinStatus);
     console.log('异常原因:', abnormalReason);
-    
+
     // 插入打卡记录
     const [result] = await connection.query(
       `INSERT INTO checkin_records 
@@ -183,25 +190,25 @@ router.post('/simple-clock', async (req, res) => {
         checkin_status, abnormal_reason, remark, is_device_abnormal, is_location_abnormal) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)`,
       [
-        user_id, 
-        locationId, 
-        type || 'in', 
+        user_id,
+        locationId,
+        type || 'in',
         checkinTime,
-        longitude || location.longitude, 
-        latitude || location.latitude, 
+        longitude || location.longitude,
+        latitude || location.latitude,
         checkinStatus,
         abnormalReason,
         remark || null
       ]
     );
-    
+
     await connection.commit();
-    
+
     // 返回打卡结果
     res.json({
       code: 200,
       message: '打卡成功',
-      data: { 
+      data: {
         recordId: result.insertId,
         checkinTime: checkinTime,
         status: checkinStatus,
@@ -211,8 +218,8 @@ router.post('/simple-clock', async (req, res) => {
   } catch (error) {
     await connection.rollback();
     console.error('打卡失败:', error);
-    res.status(500).json({ 
-      code: 500, 
+    res.status(500).json({
+      code: 500,
       message: error.message || '打卡失败'
     });
   } finally {
