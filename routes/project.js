@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const projectController = require('../controllers/projectController');
+const locationsController = require('../controllers/locationsController');
 const { authMiddleware, requireRole } = require('../middleware/auth');
 const { body } = require('express-validator');
 
@@ -24,6 +25,9 @@ router.post('/get-project-locations-list', projectController.getProjectLocations
 
 // 申请项目入场/离场
 router.post('/project-apply', projectController.applyProjectEntry);
+
+// 用户获取可用的项目列表
+router.post('/user-get-available-projects', locationsController.getAvailableProjectList);
 
 // 测试接口
 router.get('/test', (req, res) => {

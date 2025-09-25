@@ -292,7 +292,10 @@ exports.applyProjectEntry = async (req, res) => {
       if (dupRows.length) {
         await conn.rollback();
         conn.release();
-        return res.status(409).json({ message: '已存在相同类型的待审批申请' });
+        return res.status(200).json({
+          code: 409,
+          message: '已存在相同类型的待审批申请'
+        });
       }
 
       // —— 插入 —— //
@@ -312,21 +315,26 @@ exports.applyProjectEntry = async (req, res) => {
       ];
       const [result] = await conn.query(sql, params);
 
+      res.status(200).json({
+        code: 201,
+        id: result.insertId, status: 'pending'
+      });
+
       await conn.commit();
-      res.status(201).json({ id: result.insertId, status: 'pending' });
+
     } catch (e) {
       if (conn) await conn.rollback();
       if (e.code === 'ER_DUP_ENTRY') {
-        return res.status(409).json({ message: '已存在相同类型的申请' });
+        return res.status(200).json({ code: 409, message: '已存在相同类型的申请' });
       }
       console.error(e);
-      res.status(500).json({ message: '提交失败' });
+      res.status(500).json({ code: 500, message: '提交失败' });
     } finally {
       if (conn) conn.release();
     }
 
   } catch (err) {
     console.error('applyProjectEntry error:', err);
-    return res.status(500).json({ message: '服务器错误' });
+    return res.status(500).json({ code: 500, message: '服务器错误' });
   }
 };
