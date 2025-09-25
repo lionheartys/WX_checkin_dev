@@ -11,6 +11,28 @@
     </view>
   </view>
 
+  <!-- 选择项目和打卡地点 -->
+  <view class="project-selection">
+    <view class="form-item">
+      <text class="form-label">选择项目：</text>
+      <picker mode="selector" range="{{projectNames}}" bindchange="onProjectChange">
+        <view class="picker">
+          {{selectedProject || '请选择项目'}}
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <!-- 选择打卡地点 -->
+  <view class="form-item" wx:if="{{selectedProject}}">
+    <text class="form-label">选择打卡地点：</text>
+    <picker mode="selector" range="{{selectedLocationNames}}" bindchange="onLocationChange">
+      <view class="picker">
+        {{selectedLocation || '请选择打卡地点'}}
+      </view>
+    </picker>
+  </view>
+
   <!-- 今日打卡状态 -->
   <view class="today-summary">
     <view class="summary-title">今日打卡状态</view>
