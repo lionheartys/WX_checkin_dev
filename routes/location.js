@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 const { authMiddleware } = require('../middleware/auth');
+const locationsController = require('../controllers/locationsController');
 
 // 获取打卡地点列表
 router.get('/list', authMiddleware, async (req, res) => {
@@ -14,5 +15,8 @@ router.get('/list', authMiddleware, async (req, res) => {
     res.status(500).json({ code: 500, message: error.message });
   }
 });
+
+// 用户获取可用打卡地
+router.post('/user-get-available-locations', locationsController.getProjectCheckinLocations);
 
 module.exports = router;
