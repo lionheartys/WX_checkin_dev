@@ -22,6 +22,7 @@
       "pages/manager/locationManagement/locationManagement",
       "pages/manager/makeupAudit/makeupAudit",
       "pages/manager/entryApproval/entryApproval",
+      "pages/manager/checkinRecords/checkinRecords",
       "pages/admin/entryApproval/entryApproval",
       "pages/projectApply/projectApply"
     ],

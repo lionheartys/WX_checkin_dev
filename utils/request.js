@@ -423,7 +423,14 @@ adminGetProjectsManage: (params = {}) => {
       method: 'GET'
     })
   },
-  
+    // 获取打卡记录（管理员）
+    managerGetCheckinRecords: (params) => {
+      return request({
+        url: '/manager/checkin-records',
+        method: 'GET',
+        data: params
+      })
+    },
   // 获取所有启用的公司列表（用于选择）
   adminGetCompaniesSelect: () => {
     return request({
