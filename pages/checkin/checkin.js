@@ -31,14 +31,26 @@ Page({
     showMakeupDialog: false,     // 显示补卡对话框
     makeupDate: '',             // 补卡日期
     makeupType: 'in',           // 补卡类型
-    makeupReason: ''            // 补卡原因
+    makeupReason: '',            // 补卡原因
+
+    userId: null,  // 用户ID
+    //projects: [],  // 项目列表（包含项目名称和ID）
+    selectedProject: '',  // 当前选择的项目名称
+    selectedProjectId: '',  // 当前选择的项目ID
+    selectedLocation: '',  // 当前选择的打卡地点名称
+    selectedLocationId: '',  // 当前选择的打卡地点ID
+    selectedProjectLocations: [],  // 当前选择项目的打卡地点列表（包含名称和ID）
+    selectedLocationOptions: [],  // 打卡地点选项（包含名称和ID）
+
   },
 
   async onLoad() {
     this.initPage()
-    await this.loadCheckinConfig()
-    this.getLocation()
-    this.getUserInfo()
+    await this.getUserInfo();  // 获取用户信息
+    await this.loadProjects();  // 加载可选项目
+    await this.loadLocationOptions(); // 加载打卡地
+    //this.loadCheckinConfig();  // 加载打卡配置
+    //this.getLocation();
     this.loadTodayRecords()
     this.loadTodaySummary()
     this.startTimeUpdate()
@@ -84,25 +96,126 @@ Page({
     })
   },
 
-  getUserInfo() {
+  async getUserInfo() {
     const userInfo = wx.getStorageSync('userInfo')
     if (userInfo) {
-      this.setData({ userInfo })
+      this.setData({ userInfo, userId: userInfo.id });
+      console.log('用户信息已加载', this.data.userId)
     }
   },
+  //从后端获取可选项目列表
+  async loadProjects() {
+    const { userId } = this.data;
+    console.log('用户信息已加载', userId)
+    if (!userId) return;
+
+    try {
+      const res = await api.userProjectAvailableList({ userId: userId });  // 调用后端接口获取项目
+      console.log('后端状态码为', res.code)
+      if (res.code === 200) {
+        // 设置项目列表，仅展示项目名称，保存项目ID
+        console.log('后端回复为：', res.data)
+        const projects = res.data.map(project => ({
+          name: project.project_name,
+          id: project.id
+        }));
+        console.log('项目信息为', projects)
+        this.setData({
+          projects,
+          projectNames: projects.map(project => project.name) 
+        })
+      } 
+
+      else if (res.code === 404) {
+        wx.showToast({
+          title: '当前用户无有效项目',
+          icon: 'none'
+        });
+      }
+
+      else {
+        wx.showToast({
+          title: '加载项目失败',
+          icon: 'none'
+        });
+      }
+    } catch (error) {
+      console.error('加载项目失败:', error);
+      wx.showToast({
+        title: '加载项目失败',
+        icon: 'none'
+      });
+    }
+  },
+
+    // 选择项目
+  onProjectChange(e) {
+    const selectedProject = this.data.projects[e.detail.value];
+    this.setData({
+      selectedProject: selectedProject.name,  // 显示项目名称
+      selectedProjectId: selectedProject.id,  // 保存项目ID
+      selectedLocation: '',  // 清空选中的打卡地点
+      selectedLocationId: '',  // 清空打卡地点ID
+      selectedProjectLocations: selectedProject.locations || []  // 获取该项目下的打卡地点
+    }, this.loadLocationOptions);
+  },
+
+    // 加载打卡地点
+  async loadLocationOptions() {
+    const { selectedProjectId } = this.data;
+
+    if (!selectedProjectId) return;
+
+    try {
+      const res = await api.getProjectCheckinLocations({ projectId: selectedProjectId });  // 获取打卡地点
+      if (res.code === 200) {
+        console.log('打卡地信息为', res.data)
+        // 设置打卡地点选项，仅展示打卡地点名称，保存打卡地点ID
+        const locations = res.data.map(location => ({
+          name: location.location_name,
+          id: location.id
+        }));
+        this.setData({
+          selectedLocationOptions: locations,  // 设置打卡地点选项
+          selectedLocationNames: locations.map(location => location.name)
+        });
+      }
+    } catch (error) {
+      console.error('加载打卡地点失败:', error);
+      wx.showToast({
+        title: '加载打卡地点失败',
+        icon: 'none'
+      });
+    }
+  },
+
+  // 选择打卡地点
+  onLocationChange(e) {
+    const selectedLocation = this.data.selectedLocationOptions[e.detail.value];
+    this.setData({
+      selectedLocation: selectedLocation.name,  // 显示打卡地点名称
+      selectedLocationId: selectedLocation.id,  // 保存打卡地点ID
+      checkinLocation: selectedLocation  // 更新选中的打卡地点
+    });
+    
+    this.loadCheckinConfig(selectedLocation.id)
+  },
+
   // 从后端获取打卡配置
-async loadCheckinConfig() {
+  async loadCheckinConfig(locationId) {
     wx.showLoading({
       title: '加载配置...'
     })
     
+    console.log('用户选择的打卡地ID', locationId)
     try {
-      const res = await api.getCheckinConfig(1)  // 保持原有的API调用
-      
+      const res = await api.getCheckinConfig({ locationId: locationId })  // 保持原有的API调用
+      console.log('后端已返回打卡地配置', res.data)
       wx.hideLoading()
       
       if (res.code === 200 && res.data) {
         // 从后端获取配置成功，使用后端的配置数据
+        console.log('后端已返回打卡地配置', res.data)
         this.setData({
           checkinLocation: {
             latitude: res.data.latitude,
@@ -116,7 +229,16 @@ async loadCheckinConfig() {
           abnormalThreshold: res.data.abnormal_threshold || 30
         })
         console.log('打卡配置加载成功:', this.data.checkinLocation)
-      } else {
+
+        this.getLocation()
+      }
+      else if (res.code === 404) {
+        wx.showToast({
+          title: '当前项目下无可用打卡地',
+          icon: 'none'
+        });
+      }
+      else {
         wx.showToast({
           title: res.message || '获取打卡配置失败',
           icon: 'none'
@@ -148,7 +270,7 @@ async loadCheckinConfig() {
       statusText: '配置加载失败，请刷新重试'
     })
     
-    // 提示用户重新加载配置
+    提示用户重新加载配置
     wx.showModal({
       title: '提示',
       content: '打卡配置加载失败，是否重新加载？',
