@@ -607,5 +607,98 @@ router.get('/entry-applications/statistics', async (req, res) => {
   }
 });
 
+// 项目管理员获取自己负责项目的打卡记录（支持日期和状态等筛选）
+router.get('/checkin-records', async (req, res) => {
+  try {
+    const { id: currentUserId } = req.user; // 当前登录用户ID（项目管理员）
+    const { date, start_date, end_date, user_id, location_id, status } = req.query;
+    
+    let query = `
+      SELECT cr.*, u.username, u.phone, cl.location_name, p.project_name
+      FROM checkin_records cr
+      INNER JOIN users u ON cr.user_id = u.id
+      INNER JOIN checkin_locations cl ON cr.location_id = cl.id
+      INNER JOIN projects p ON cl.project_id = p.id
+      WHERE p.manager_id = ?
+    `;
+    
+    const params = [currentUserId];
+    
+    // 单日期查询
+    if (date) {
+      query += ' AND DATE(cr.checkin_time) = ?';
+      params.push(date);
+    }
+    // 日期范围查询
+    else if (start_date && end_date) {
+      query += ' AND DATE(cr.checkin_time) BETWEEN ? AND ?';
+      params.push(start_date, end_date);
+    }
+    
+    if (user_id) {
+      query += ' AND cr.user_id = ?';
+      params.push(user_id);
+    }
+    
+    if (location_id) {
+      query += ' AND cr.location_id = ?';
+      params.push(location_id);
+    }
+    
+    if (status) {
+      query += ' AND cr.checkin_status = ?';
+      params.push(status);
+    }
+    
+    query += ' ORDER BY cr.checkin_time DESC LIMIT 100';
+    
+    const [records] = await pool.query(query, params);
+    res.json({ 
+      code: 200,
+      message: '获取成功',
+      data: records 
+    });
+  } catch (error) {
+    console.error('获取打卡记录失败:', error);
+    res.status(500).json({ 
+      code: 500,
+      message: '获取打卡记录失败',
+      data: null 
+    });
+  }
+});
+
+// 项目管理员获取自己负责项目的异常打卡记录
+router.get('/abnormal-records', async (req, res) => {
+  try {
+    const { id: currentUserId } = req.user;
+    const query = `
+      SELECT cr.*, u.username, u.phone, cl.location_name, p.project_name
+      FROM checkin_records cr
+      INNER JOIN users u ON cr.user_id = u.id
+      INNER JOIN checkin_locations cl ON cr.location_id = cl.id
+      INNER JOIN projects p ON cl.project_id = p.id
+      WHERE p.manager_id = ?
+        AND cr.checkin_status IN ('late', 'early', 'absent', 'abnormal')
+      ORDER BY cr.checkin_time DESC
+      LIMIT 100
+    `;
+    
+    const [records] = await pool.query(query, [currentUserId]);
+    res.json({ 
+      code: 200,
+      message: '获取成功',
+      data: records 
+    });
+  } catch (error) {
+    console.error('获取异常记录失败:', error);
+    res.status(500).json({ 
+      code: 500,
+      message: '获取异常记录失败',
+      data: null 
+    });
+  }
+});
+
 
 module.exports = router;
