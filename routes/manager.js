@@ -274,7 +274,7 @@ router.get('/statistics', async (req, res) => {
     const projectIds = projects.map(p => p.id);
 
     // 2. 今日打卡人数
-    const [todayCheckins] = await pool.query(
+    const [todayCheckinsRows] = await pool.query(
       `SELECT COUNT(DISTINCT cr.user_id) as count
        FROM checkin_records cr
        INNER JOIN checkin_locations cl ON cr.location_id = cl.id
@@ -283,7 +283,7 @@ router.get('/statistics', async (req, res) => {
     );
 
     // 3. 今日异常打卡数
-    const [abnormalToday] = await pool.query(
+    const [abnormalTodayRows] = await pool.query(
       `SELECT COUNT(*) as count
        FROM checkin_records cr
        INNER JOIN checkin_locations cl ON cr.location_id = cl.id
@@ -293,7 +293,7 @@ router.get('/statistics', async (req, res) => {
     );
 
     // 4. 待审核补卡
-    const [pendingMakeup] = await pool.query(
+    const [pendingMakeupRows] = await pool.query(
       `SELECT COUNT(*) as count
        FROM makeup_applications ma
        INNER JOIN checkin_locations cl ON ma.location_id = cl.id
@@ -302,7 +302,7 @@ router.get('/statistics', async (req, res) => {
     );
 
     // 5. 待审核请假
-    const [pendingLeave] = await pool.query(
+    const [pendingLeaveRows] = await pool.query(
       `SELECT COUNT(*) as count
        FROM leave_applications la
        INNER JOIN project_entries pe ON la.user_id = pe.user_id
@@ -311,7 +311,7 @@ router.get('/statistics', async (req, res) => {
     );
 
     // 6. 待审批入场申请
-    const [pendingEntry] = await pool.query(
+    const [pendingEntryRows] = await pool.query(
       `SELECT COUNT(*) as count
        FROM project_entries pe
        WHERE pe.project_id IN (?) AND pe.status = 'pending'`,
@@ -322,11 +322,11 @@ router.get('/statistics', async (req, res) => {
       code: 200,
       message: '获取成功',
       data: {
-        todayCheckins: todayCheckins[0].count,
-        abnormalToday: abnormalToday[0].count,
-        pendingMakeup: pendingMakeup[0].count,
-        pendingLeave: pendingLeave[0].count,
-        pendingEntry: pendingEntry[0].count
+        todayCheckins: todayCheckinsRows?.[0]?.count || 0,
+        abnormalToday: abnormalTodayRows?.[0]?.count || 0,
+        pendingMakeup: pendingMakeupRows?.[0]?.count || 0,
+        pendingLeave: pendingLeaveRows?.[0]?.count || 0,
+        pendingEntry: pendingEntryRows?.[0]?.count || 0
       }
     });
   } catch (error) {
@@ -335,6 +335,367 @@ router.get('/statistics', async (req, res) => {
       code: 500,
       message: '获取统计数据失败',
       data: null
+    });
+  }
+});
+
+// 获取补卡申请列表（只查自己项目的）
+router.get('/makeup-applications', async (req, res) => {
+  try {
+    const managerId = req.user.id;
+    const { status = 'pending' } = req.query;
+
+    // 先查项目 ID
+    const [projects] = await pool.query(
+      'SELECT id FROM projects WHERE manager_id = ?',
+      [managerId]
+    );
+    if (projects.length === 0) {
+      return res.json({ code: 200, message: '无项目数据', data: [] });
+    }
+    const projectIds = projects.map(p => p.id);
+
+    // 查补卡申请
+    const query = `
+      SELECT ma.*, u.username, u.phone, cl.location_name, p.project_name
+      FROM makeup_applications ma
+      INNER JOIN users u ON ma.user_id = u.id
+      INNER JOIN checkin_locations cl ON ma.location_id = cl.id
+      INNER JOIN projects p ON cl.project_id = p.id
+      WHERE cl.project_id IN (?) AND ma.status = ?
+      ORDER BY ma.created_at DESC
+    `;
+    const [applications] = await pool.query(query, [projectIds, status]);
+
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: applications
+    });
+  } catch (error) {
+    console.error('获取补卡申请失败:', error);
+    res.status(500).json({ code: 500, message: '获取补卡申请失败', data: null });
+  }
+});
+
+// 审批补卡申请
+router.post('/audit-makeup', async (req, res) => {
+  const connection = await pool.getConnection();
+  try {
+    const managerId = req.user.id;
+    const { application_id, status, remark } = req.body;
+
+    await connection.beginTransaction();
+
+    // 检查申请是否属于自己项目
+    const [apps] = await connection.query(
+      `SELECT ma.*, cl.project_id 
+       FROM makeup_applications ma
+       INNER JOIN checkin_locations cl ON ma.location_id = cl.id
+       WHERE ma.id = ?`,
+      [application_id]
+    );
+    if (!apps.length) {
+      await connection.rollback();
+      return res.status(404).json({ code: 404, message: '申请不存在' });
+    }
+    const app = apps[0];
+
+    const [checkProject] = await connection.query(
+      'SELECT id FROM projects WHERE id = ? AND manager_id = ?',
+      [app.project_id, managerId]
+    );
+    if (!checkProject.length) {
+      await connection.rollback();
+      return res.status(403).json({ code: 403, message: '无权审批该申请' });
+    }
+
+    // 更新申请状态
+    await connection.query(
+      `UPDATE makeup_applications 
+       SET status = ?, approver_id = ?, approve_time = NOW(), approve_remark = ?
+       WHERE id = ?`,
+      [status, managerId, remark, application_id]
+    );
+
+    // 如果批准，插入补卡打卡记录
+    if (status === 'approved') {
+      const makeupDate = new Date(app.makeup_date);
+      const year = makeupDate.getFullYear();
+      const month = String(makeupDate.getMonth() + 1).padStart(2, '0');
+      const day = String(makeupDate.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+
+      const checkinTime = app.makeup_type === 'in'
+        ? `${formattedDate} 09:00:00`
+        : `${formattedDate} 18:00:00`;
+
+      await connection.query(
+        `INSERT INTO checkin_records 
+         (user_id, location_id, checkin_type, checkin_time, longitude, latitude, checkin_status, remark)
+         VALUES (?, ?, ?, ?, 0, 0, 'normal', ?)`,
+        [app.user_id, app.location_id, app.makeup_type, checkinTime, '补卡记录']
+      );
+    }
+
+    await connection.commit();
+    res.json({ code: 200, message: '审批完成' });
+  } catch (error) {
+    await connection.rollback();
+    console.error('审批补卡失败:', error);
+    res.status(500).json({ code: 500, message: '审批补卡失败' });
+  } finally {
+    connection.release();
+  }
+});
+
+// 获取项目管理员的入场申请列表
+router.get('/entry-applications', async (req, res) => {
+  try {
+    const { status = 'all' } = req.query;
+    const managerId = req.user.id; // 当前登录用户ID（项目管理员）
+
+    let query = `
+      SELECT 
+        pe.id,
+        pe.user_id,
+        pe.project_id,
+        pe.location_id,
+        pe.entry_type,
+        pe.apply_reason,
+        pe.status,
+        pe.approve_time,
+        pe.approve_remark,
+        pe.expect_leavetime,
+        pe.created_at,
+        u.username,
+        u.phone,
+        p.project_name,
+        cl.location_name,
+        approver.username as approver_name
+      FROM project_entries AS pe
+      LEFT JOIN users u ON pe.user_id = u.id
+      LEFT JOIN projects p ON pe.project_id = p.id
+      LEFT JOIN checkin_locations cl ON pe.location_id = cl.id
+      LEFT JOIN users approver ON pe.approver_id = approver.id
+      WHERE p.manager_id = ?   -- 限制只能看到自己管理的项目
+    `;
+
+    const params = [managerId];
+
+    if (status !== 'all') {
+      query += ' AND pe.status = ?';
+      params.push(status);
+    }
+
+    query += ' ORDER BY pe.user_id, pe.project_id, pe.created_at DESC';
+
+    const [applications] = await pool.query(query, params);
+
+    // 分组
+    const groupedData = {};
+    applications.forEach(app => {
+      if (!groupedData[app.user_id]) {
+        groupedData[app.user_id] = {
+          user_id: app.user_id,
+          username: app.username,
+          phone: app.phone,
+          projects: {}
+        };
+      }
+
+      if (!groupedData[app.user_id].projects[app.project_id]) {
+        groupedData[app.user_id].projects[app.project_id] = {
+          project_id: app.project_id,
+          project_name: app.project_name,
+          applications: []
+        };
+      }
+
+      groupedData[app.user_id].projects[app.project_id].applications.push(app);
+    });
+
+    const result = Object.values(groupedData).map(user => ({
+      ...user,
+      projects: Object.values(user.projects)
+    }));
+
+    res.json({ code: 200, message: '获取成功', data: result });
+  } catch (error) {
+    console.error('获取项目入场申请列表失败:', error);
+    res.status(500).json({ code: 500, message: '获取失败', data: null });
+  }
+});
+
+
+// 审批项目入场申请
+router.post('/entry-applications/:id/approve', async (req, res) => {
+  const connection = await pool.getConnection();
+  
+  try {
+    const { id } = req.params;
+    const { status, approve_remark } = req.body;
+    const approver_id = req.user.id;
+
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ code: 400, message: '无效的审批状态' });
+    }
+
+    await connection.beginTransaction();
+
+    // 查询申请 + 验证项目归属
+    const [applications] = await connection.query(
+      `SELECT pe.*, p.manager_id 
+       FROM project_entries pe
+       JOIN projects p ON pe.project_id = p.id
+       WHERE pe.id = ? AND pe.status = 'pending'`,
+      [id]
+    );
+
+    if (applications.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ code: 404, message: '申请不存在或已处理' });
+    }
+
+    const application = applications[0];
+
+    if (application.manager_id !== approver_id) {
+      await connection.rollback();
+      return res.status(403).json({ code: 403, message: '无权限审批该项目申请' });
+    }
+
+    // 更新审批状态
+    await connection.query(
+      `UPDATE project_entries 
+       SET status=?, approver_id=?, approve_time=NOW(), approve_remark=? 
+       WHERE id=?`,
+      [status, approver_id, approve_remark, id]
+    );
+
+    await connection.commit();
+    res.json({ code: 200, message: `${status === 'approved' ? '批准' : '拒绝'}成功` });
+  } catch (error) {
+    await connection.rollback();
+    console.error('审批项目入场申请失败:', error);
+    res.status(500).json({ code: 500, message: '审批失败', error: error.message });
+  } finally {
+    connection.release();
+  }
+});
+
+
+// 项目管理员统计信息
+router.get('/entry-applications/statistics', async (req, res) => {
+  try {
+    const managerId = req.user.id;
+
+    const [stats] = await pool.query(`
+      SELECT 
+        COUNT(CASE WHEN pe.status = 'pending' THEN 1 END) as pending_count,
+        COUNT(CASE WHEN pe.status = 'approved' THEN 1 END) as approved_count,
+        COUNT(CASE WHEN pe.status = 'rejected' THEN 1 END) as rejected_count,
+        COUNT(*) as total_count
+      FROM project_entries pe
+      JOIN projects p ON pe.project_id = p.id
+      WHERE p.manager_id = ?
+    `, [managerId]);
+
+    res.json({ code: 200, message: '获取成功', data: stats[0] });
+  } catch (error) {
+    console.error('获取项目入场申请统计失败:', error);
+    res.status(500).json({ code: 500, message: '获取失败', data: null });
+  }
+});
+
+// 项目管理员获取自己负责项目的打卡记录（支持日期和状态等筛选）
+router.get('/checkin-records', async (req, res) => {
+  try {
+    const { id: currentUserId } = req.user; // 当前登录用户ID（项目管理员）
+    const { date, start_date, end_date, user_id, location_id, status } = req.query;
+    
+    let query = `
+      SELECT cr.*, u.username, u.phone, cl.location_name, p.project_name
+      FROM checkin_records cr
+      INNER JOIN users u ON cr.user_id = u.id
+      INNER JOIN checkin_locations cl ON cr.location_id = cl.id
+      INNER JOIN projects p ON cl.project_id = p.id
+      WHERE p.manager_id = ?
+    `;
+    
+    const params = [currentUserId];
+    
+    // 单日期查询
+    if (date) {
+      query += ' AND DATE(cr.checkin_time) = ?';
+      params.push(date);
+    }
+    // 日期范围查询
+    else if (start_date && end_date) {
+      query += ' AND DATE(cr.checkin_time) BETWEEN ? AND ?';
+      params.push(start_date, end_date);
+    }
+    
+    if (user_id) {
+      query += ' AND cr.user_id = ?';
+      params.push(user_id);
+    }
+    
+    if (location_id) {
+      query += ' AND cr.location_id = ?';
+      params.push(location_id);
+    }
+    
+    if (status) {
+      query += ' AND cr.checkin_status = ?';
+      params.push(status);
+    }
+    
+    query += ' ORDER BY cr.checkin_time DESC LIMIT 100';
+    
+    const [records] = await pool.query(query, params);
+    res.json({ 
+      code: 200,
+      message: '获取成功',
+      data: records 
+    });
+  } catch (error) {
+    console.error('获取打卡记录失败:', error);
+    res.status(500).json({ 
+      code: 500,
+      message: '获取打卡记录失败',
+      data: null 
+    });
+  }
+});
+
+// 项目管理员获取自己负责项目的异常打卡记录
+router.get('/abnormal-records', async (req, res) => {
+  try {
+    const { id: currentUserId } = req.user;
+    const query = `
+      SELECT cr.*, u.username, u.phone, cl.location_name, p.project_name
+      FROM checkin_records cr
+      INNER JOIN users u ON cr.user_id = u.id
+      INNER JOIN checkin_locations cl ON cr.location_id = cl.id
+      INNER JOIN projects p ON cl.project_id = p.id
+      WHERE p.manager_id = ?
+        AND cr.checkin_status IN ('late', 'early', 'absent', 'abnormal')
+      ORDER BY cr.checkin_time DESC
+      LIMIT 100
+    `;
+    
+    const [records] = await pool.query(query, [currentUserId]);
+    res.json({ 
+      code: 200,
+      message: '获取成功',
+      data: records 
+    });
+  } catch (error) {
+    console.error('获取异常记录失败:', error);
+    res.status(500).json({ 
+      code: 500,
+      message: '获取异常记录失败',
+      data: null 
     });
   }
 });
