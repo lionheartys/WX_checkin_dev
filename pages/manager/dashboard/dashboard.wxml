@@ -22,10 +22,12 @@
       <view class="stat-value">{{statistics.pendingMakeup}}</view>
       <view class="stat-label">待审核补卡</view>
     </view>
+    <!--
     <view class="stat-card">
       <view class="stat-value">{{statistics.pendingLeave}}</view>
       <view class="stat-label">待审核请假</view>
     </view>
+    -->
     <view class="stat-card">
       <view class="stat-value">{{statistics.pendingEntry}}</view>
       <view class="stat-label">待审批入场</view>
@@ -41,7 +43,7 @@
         {{statistics.pendingMakeup}}
       </view>
     </view>
-    
+    <!--
     <view class="module-card" bindtap="goToLeaveAudit">
       <view class="module-icon">📋</view>
       <view class="module-name">请假审核</view>
@@ -49,7 +51,7 @@
         {{statistics.pendingLeave}}
       </view>
     </view>
-    
+    -->
     <view class="module-card" bindtap="goToCheckinRecords">
       <view class="module-icon">📊</view>
       <view class="module-name">打卡记录</view>

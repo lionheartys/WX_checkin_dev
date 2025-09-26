@@ -423,7 +423,14 @@ adminGetProjectsManage: (params = {}) => {
       method: 'GET'
     })
   },
-  
+    // 获取打卡记录（管理员）
+    managerGetCheckinRecords: (params) => {
+      return request({
+        url: '/manager/checkin-records',
+        method: 'GET',
+        data: params
+      })
+    },
   // 获取所有启用的公司列表（用于选择）
   adminGetCompaniesSelect: () => {
     return request({
@@ -457,6 +464,94 @@ adminGetProjectsManage: (params = {}) => {
       method: 'GET'
     })
   },
+  // manager 审批补卡申请
+  managerGetMakeupApplications(status) {
+    return request({
+      url: '/manager/makeup-applications',
+      method: 'GET',
+      data: { status }
+    })
+  },
+
+  managerAuditMakeup(data) {
+    return request({
+      url: '/manager/makeup-audit',
+      method: 'POST',
+      data
+    })
+  },
+    // 获取入场申请列表
+  managerGetEntryApplications(params) {
+    return request({
+      url: '/manager/entry-applications',
+      method: 'GET',
+      data: params
+    })
+  },
+  
+  // 获取项目列表（分页，支持搜索和状态筛选）
+  managerGetProjects(params) {
+    return request({
+      url: '/manager/projects',
+      method: 'GET',
+      data: params
+    })
+  },
+
+  // 添加项目
+  managerAddProject(data) {
+    return request({
+      url: '/manager/projects',
+      method: 'POST',
+      data
+    })
+  },
+
+  // 更新项目
+  managerUpdateProject(id, data) {
+    return request({
+      url: `/manager/projects/${id}`,
+      method: 'PUT',
+      data
+    })
+  },
+
+  // 更新项目状态（启用/禁用）
+  managerUpdateProjectStatus(id, status) {
+    return request({
+      url: `/manager/projects/${id}/status`,
+      method: 'PATCH',
+      data: { status }
+    })
+  },
+
+  // 删除项目
+  managerDeleteProject(id) {
+    return request({
+      url: `/manager/projects/${id}`,
+      method: 'DELETE'
+    })
+  },
+
+  // 获取入场审批统计
+  managerGetEntryStatistics() {
+    return request({
+      url: '/manager/entry-applications/statistics',
+      method: 'GET'
+    })
+  },
+
+
+  // 审批某个申请
+  managerApproveEntry(id, data) {
+    return request({
+      url: `/manager/entry-applications/${id}/approve`,
+      method: 'POST',
+      data
+    })
+  },
+
+
 
   //拉取项目列表
   getProjectList: () => {

@@ -20,6 +20,9 @@
       "pages/admin/projectManagement/projectManagement",
       "pages/manager/projectManagement/projectManagement",
       "pages/manager/locationManagement/locationManagement",
+      "pages/manager/makeupAudit/makeupAudit",
+      "pages/manager/entryApproval/entryApproval",
+      "pages/manager/checkinRecords/checkinRecords",
       "pages/admin/entryApproval/entryApproval",
       "pages/projectApply/projectApply"
     ],
@@ -57,7 +60,7 @@
           "pagePath": "pages/profile/profile",
           "text": "我的",
           "iconPath": "images/profile.png", 
-          "selectedIconPath": "images/profile.png"
+          "selectedIconPath": "images/profile-active.png"
         }
       ]
     },
