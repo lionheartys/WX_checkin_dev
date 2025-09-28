@@ -20,10 +20,17 @@
 
 
 
-ALTER TABLE `users`
-  ADD COLUMN `contract_expire_time` DATETIME NULL COMMENT '合同到期时间' AFTER `updated_at`;
+-- ALTER TABLE `users`
+--   ADD COLUMN `contract_expire_time` DATETIME NULL COMMENT '合同到期时间' AFTER `updated_at`;
 
-UPDATE `users`
-SET `contract_expire_time` = '2030-12-31 23:59:59'
-WHERE `id` IN (12,13,14,15,16,17);
+-- UPDATE `users`
+-- SET `contract_expire_time` = '2030-12-31 23:59:59'
+-- WHERE `id` IN (12,13,14,15,16,17);
+
+ALTER TABLE project_entries DROP INDEX uk_user_location;
+
+UPDATE checkin_locations
+SET longitude = 104.04311, latitude = 30.64242
+WHERE id = 8;
+
 
