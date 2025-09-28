@@ -32,6 +32,11 @@ Page({
     makeupDate: '',             // 补卡日期
     makeupType: 'in',           // 补卡类型
     makeupReason: '',            // 补卡原因
+    // 新增加的补卡选择
+    makeupLocations: [],          // 可用的补卡地点列表
+    makeupLocationNames: [],      // 补卡地点名称列表
+    selectedMakeupLocation: '',   // 选中的补卡地点名称
+    selectedMakeupLocationId: '', // 选中的补卡地点ID
 
     userId: null,  // 用户ID
     //projects: [],  // 项目列表（包含项目名称和ID）
@@ -658,27 +663,76 @@ async executeCheckin(type, remark = '') {
     }
   },
 
+//   // 显示补卡对话框
+//   showMakeupApplication() {
+//     const today = new Date()
+//     const dateStr = today.toISOString().split('T')[0]
+    
+//     this.setData({
+//       showMakeupDialog: true,
+//       makeupDate: dateStr
+//     })
+//   },
   // 显示补卡对话框
-  showMakeupApplication() {
-    const today = new Date()
-    const dateStr = today.toISOString().split('T')[0]
+  async showMakeupApplication() {
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    
+    // 先加载可用的补卡地点
+    await this.loadMakeupLocations();
+    
+    // 如果当前有选中的打卡地点，默认选中它
+    let defaultLocationIndex = -1;
+    let defaultLocationName = '';
+    let defaultLocationId = '';
+    
+    if (this.data.selectedLocationId) {
+      const index = this.data.makeupLocations.findIndex(
+        loc => loc.id === this.data.selectedLocationId
+      );
+      if (index !== -1) {
+        defaultLocationIndex = index;
+        const location = this.data.makeupLocations[index];
+        defaultLocationName = `${location.project_name} - ${location.location_name}`;
+        defaultLocationId = location.id;
+      }
+    }
+    
+    // 如果没有找到当前地点，默认选择第一个
+    if (defaultLocationIndex === -1 && this.data.makeupLocations.length > 0) {
+      const location = this.data.makeupLocations[0];
+      defaultLocationName = `${location.project_name} - ${location.location_name}`;
+      defaultLocationId = location.id;
+    }
     
     this.setData({
       showMakeupDialog: true,
-      makeupDate: dateStr
-    })
+      makeupDate: dateStr,
+      selectedMakeupLocation: defaultLocationName,
+      selectedMakeupLocationId: defaultLocationId
+    });
   },
 
   // 隐藏补卡对话框
+//   hideMakeupDialog() {
+//     this.setData({
+//       showMakeupDialog: false,
+//       makeupDate: '',
+//       makeupType: 'in',
+//       makeupReason: ''
+//     })
+//   },
+  
   hideMakeupDialog() {
     this.setData({
       showMakeupDialog: false,
       makeupDate: '',
       makeupType: 'in',
-      makeupReason: ''
-    })
+      makeupReason: '',
+      selectedMakeupLocation: '',
+      selectedMakeupLocationId: ''
+    });
   },
-
   // 更新补卡日期
   onMakeupDateChange(e) {
     this.setData({
@@ -700,61 +754,103 @@ async executeCheckin(type, remark = '') {
     })
   },
 
+  // 选择补卡地点
+  onMakeupLocationChange(e) {
+    const index = e.detail.value;
+    const location = this.data.makeupLocations[index];
+    
+    if (location) {
+      this.setData({
+        selectedMakeupLocation: `${location.project_name} - ${location.location_name}`,
+        selectedMakeupLocationId: location.id
+      });
+    }
+  },
+
+  // 获取可用的补卡地点
+async loadMakeupLocations() {
+    try {
+      const res = await api.getAllAvailableLocations();
+      if (res.code === 200) {
+        const locations = res.data || [];
+        const locationNames = locations.map(loc => 
+          `${loc.project_name} - ${loc.location_name}`
+        );
+        
+        this.setData({
+          makeupLocations: locations,
+          makeupLocationNames: locationNames
+        });
+      }
+    } catch (error) {
+      console.error('获取补卡地点失败:', error);
+    }
+  },
+
+  
   // 提交补卡申请
   async submitMakeup() {
-    const { makeupDate, makeupType, makeupReason } = this.data
+    const { makeupDate, makeupType, makeupReason, selectedMakeupLocationId } = this.data;
+    
+    if (!selectedMakeupLocationId) {
+      wx.showToast({
+        title: '请选择补卡地点',
+        icon: 'none'
+      });
+      return;
+    }
     
     if (!makeupReason) {
       wx.showToast({
         title: '请输入补卡原因',
         icon: 'none'
-      })
-      return
+      });
+      return;
     }
-
-    const userInfo = this.data.userInfo || wx.getStorageSync('userInfo')
+  
+    const userInfo = this.data.userInfo || wx.getStorageSync('userInfo');
     if (!userInfo) {
       wx.showToast({
         title: '请先登录',
         icon: 'none'
-      })
-      return
+      });
+      return;
     }
-
+  
     wx.showLoading({
       title: '提交中...'
-    })
-
+    });
+  
     try {
       const res = await api.applyMakeup({
         user_id: userInfo.id,
-        location_id: 1, // 默认位置ID
+        location_id: selectedMakeupLocationId,  // 使用选中的地点ID
         makeup_date: makeupDate,
         makeup_type: makeupType,
         reason: makeupReason
-      })
-
-      wx.hideLoading()
-
+      });
+  
+      wx.hideLoading();
+  
       if (res.code === 200) {
         wx.showToast({
           title: '补卡申请已提交',
           icon: 'success'
-        })
-        this.hideMakeupDialog()
+        });
+        this.hideMakeupDialog();
       } else {
         wx.showToast({
           title: res.message || '提交失败',
           icon: 'none'
-        })
+        });
       }
     } catch (error) {
-      wx.hideLoading()
-      console.error('补卡申请失败:', error)
+      wx.hideLoading();
+      console.error('补卡申请失败:', error);
       wx.showToast({
         title: '提交失败',
         icon: 'none'
-      })
+      });
     }
   },
 
