@@ -247,4 +247,7 @@ router.get('/records/:userId', async (req, res) => {
   }
 });
 
+// 获取所有可用的打卡地点（用于补卡）
+router.get('/available-locations', authMiddleware, checkinController.getAllAvailableLocations);
+
 module.exports = router;

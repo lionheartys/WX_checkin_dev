@@ -271,13 +271,78 @@ exports.getHistory = async (req, res) => {
   }
 };
 
-// 补卡申请
+// // 补卡申请
+// exports.applyMakeup = async (req, res) => {
+//   const connection = await pool.getConnection();
+  
+//   try {
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       return res.status(400).json({
+//         code: 400,
+//         message: '参数验证失败',
+//         data: errors.array()
+//       });
+//     }
+
+//     const userId = req.user.id;
+//     const { location_id, makeup_date, makeup_type, reason } = req.body;
+    
+//     await connection.beginTransaction();
+    
+//     // 检查是否已有补卡申请
+//     const [existing] = await connection.query(
+//       `SELECT * FROM makeup_applications 
+//        WHERE user_id = ? AND location_id = ? AND makeup_date = ? AND makeup_type = ?`,
+//       [userId, location_id, makeup_date, makeup_type]
+//     );
+    
+//     if (existing.length > 0) {
+//       await connection.rollback();
+//       return res.status(400).json({
+//         code: 400,
+//         message: '已存在相同的补卡申请',
+//         data: null
+//       });
+//     }
+    
+//     // 插入补卡申请
+//     const [result] = await connection.query(
+//       `INSERT INTO makeup_applications 
+//        (user_id, location_id, makeup_date, makeup_type, reason) 
+//        VALUES (?, ?, ?, ?, ?)`,
+//       [userId, location_id, makeup_date, makeup_type, reason]
+//     );
+    
+//     await connection.commit();
+    
+//     res.json({
+//       code: 200,
+//       message: '补卡申请提交成功',
+//       data: {
+//         applicationId: result.insertId
+//       }
+//     });
+//   } catch (error) {
+//     await connection.rollback();
+//     console.error('补卡申请失败:', error);
+//     res.status(500).json({
+//       code: 500,
+//       message: '补卡申请失败',
+//       data: null
+//     });
+//   } finally {
+//     connection.release();
+//   }
+// };
+
 exports.applyMakeup = async (req, res) => {
   const connection = await pool.getConnection();
   
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('参数验证失败:', errors.array());  // Log validation errors
       return res.status(400).json({
         code: 400,
         message: '参数验证失败',
@@ -288,6 +353,8 @@ exports.applyMakeup = async (req, res) => {
     const userId = req.user.id;
     const { location_id, makeup_date, makeup_type, reason } = req.body;
     
+    console.log(`User ${userId} is applying for a makeup request:`, { location_id, makeup_date, makeup_type, reason });
+
     await connection.beginTransaction();
     
     // 检查是否已有补卡申请
@@ -298,6 +365,7 @@ exports.applyMakeup = async (req, res) => {
     );
     
     if (existing.length > 0) {
+      console.log('已存在相同的补卡申请:', existing);  // Log the existing application details
       await connection.rollback();
       return res.status(400).json({
         code: 400,
@@ -316,6 +384,8 @@ exports.applyMakeup = async (req, res) => {
     
     await connection.commit();
     
+    console.log('补卡申请提交成功，申请ID:', result.insertId);  // Log successful insertion
+
     res.json({
       code: 200,
       message: '补卡申请提交成功',
@@ -325,7 +395,7 @@ exports.applyMakeup = async (req, res) => {
     });
   } catch (error) {
     await connection.rollback();
-    console.error('补卡申请失败:', error);
+    console.error('补卡申请失败:', error);  // Log the error details
     res.status(500).json({
       code: 500,
       message: '补卡申请失败',
@@ -333,5 +403,94 @@ exports.applyMakeup = async (req, res) => {
     });
   } finally {
     connection.release();
+    console.log('数据库连接已释放');  // Log that the connection has been released
   }
 };
+
+// 获取打卡地点列表
+exports.getCheckinLocations = async (req, res) => {
+  try {
+    const { project_id } = req.query;
+    
+    let sql = `
+      SELECT 
+        cl.id,
+        cl.location_name,
+        cl.work_start_time,
+        cl.work_end_time,
+        cl.checkin_range,
+        p.project_name
+      FROM checkin_locations cl
+      LEFT JOIN projects p ON cl.project_id = p.id
+      WHERE cl.status = 1
+    `;
+    
+    const params = [];
+    
+    // 如果指定了项目ID，则只返回该项目的打卡地点
+    if (project_id) {
+      sql += ' AND cl.project_id = ?';
+      params.push(project_id);
+    }
+    
+    sql += ' ORDER BY cl.project_id, cl.location_name';
+    
+    const [locations] = await pool.query(sql, params);
+    
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: locations
+    });
+  } catch (error) {
+    console.error('获取打卡地点列表失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '获取打卡地点列表失败',
+      data: null
+    });
+  }
+};
+
+// 获取所有可用的打卡地点（用于补卡申请）
+// 但是想了下 这个逻辑可能有点不对 补卡申请的时候可能已经过期了
+// 前面的全部都展示可能也有点问题
+exports.getAllAvailableLocations = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // 获取用户有权限的项目的所有打卡地点
+    // AND pe.status = 'approved'这个限制去掉
+    // 后续可能会需要一个对时间上的逻辑限制，就是申请补卡时间和入场时间的关系
+    // 现在先不做这个限制，因为这个逻辑可能比较复杂 涉及到预计到期时间和后续有没有实际申请离场时间早于预期
+    const [locations] = await pool.query(
+      `SELECT DISTINCT
+        cl.id,
+        cl.location_name,
+        cl.project_id,
+        p.project_name
+      FROM checkin_locations cl
+      INNER JOIN projects p ON cl.project_id = p.id
+      INNER JOIN project_entries pe ON pe.location_id = cl.id
+      WHERE pe.user_id = ? 
+        AND pe.entry_type = 'entry' 
+        AND cl.status = 1
+      ORDER BY p.project_name, cl.location_name`,
+      [userId]
+    );
+    
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: locations
+    });
+  } catch (error) {
+    console.error('获取可用打卡地点失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '获取可用打卡地点失败',
+      data: null
+    });
+  }
+};
+
