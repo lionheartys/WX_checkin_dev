@@ -1,5 +1,5 @@
 // utils/request.js
-const baseURL ='http://192.168.15.127:3333/api'
+const baseURL ='http://192.168.15.127:3000/api'
 
 // 基础请求方法
 const request = (options) => {
@@ -234,7 +234,7 @@ getLeaveTypes: () => {
   },
 
   // 获取请假申请列表
-adminGetLeaveApplications: (status = 'pending') => {
+  adminGetLeaveApplications: (status = 'pending') => {
     return request({
       url: '/admin/leave-applications',
       method: 'GET',
@@ -252,7 +252,7 @@ adminGetLeaveApplications: (status = 'pending') => {
   },
 
   // 获取打卡地列表
-adminGetCheckinLocations: (status) => {
+  adminGetCheckinLocations: (status) => {
     return request({
       url: '/admin/checkin-locations',
       method: 'GET',
@@ -500,7 +500,15 @@ adminGetProjectsManage: (params = {}) => {
       method: 'POST',
       data: { projectId: projectId }
     })
-  }
+  },
+  // 获取所有可用的补卡地点
+  getAllAvailableLocations: () => {
+    return request({
+        url:'/checkin/available-locations', 
+        method: 'GET',
+        // data
+    })
+  },
 }
 // 导出api对象
 module.exports = api
